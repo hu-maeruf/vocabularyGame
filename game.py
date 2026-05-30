@@ -38,9 +38,19 @@ def get_session_list(chosen_letter, state):
         session_word = init_animals[state].copy() + init_fruits_veg[state].copy() + init_colors[state].copy()
     return session_word
 
-def session_word_list(user_input):
+def session_word_list(user_input, previous_score):
     # Shuffled list of words
-    session_words = get_session_list(user_input, "easy")
+    if previous_score >= 4:
+        session_words = get_session_list(user_input, "diff")
+
+    elif previous_score == 3:
+        easy_words = get_session_list(user_input, "easy")
+        diff_words = get_session_list(user_input, "diff")
+        session_words = random.sample(easy_words,2) + random.sample(diff_words,3)
+
+    else:
+        session_words = get_session_list(user_input, "easy")
+
     random.shuffle(session_words)
     return session_words
 
