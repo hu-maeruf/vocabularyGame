@@ -17,14 +17,13 @@ class Question:
     def get_user_answer(self):
         self.answer = input(f"What is this {self.word}?\nAnswer: ").strip().lower()
 
-    def display(self):
-        if self.check_answer():
+    def check_answer(self):
+        if self.answer == self.word.lower():
             print("Correct!")
+            return True
         else:
             print("Incorrect!")
-
-    def check_answer(self):
-        return self.answer == self.word.lower()
+            return False
 
 # Choose a category/world
 def choose_category():
@@ -53,14 +52,17 @@ def create_session_words(user_input, previous_score):
     # Shuffled list of words
     if previous_score >= 4:
         session_words = get_words_list(user_input, DIFFICULTY_DIFFICULT)
+        print("Session words are from Difficult category.")
 
     elif previous_score == 3:
         easy_words = get_words_list(user_input, DIFFICULTY_EASY)
         diff_words = get_words_list(user_input, DIFFICULTY_DIFFICULT)
         session_words = random.sample(easy_words,2) + random.sample(diff_words,3)
+        print("Session words are mix of Easy and Difficult category.")
 
     else:
         session_words = get_words_list(user_input, DIFFICULTY_EASY)
+        print("Session words are from Easy category.")
 
     random.shuffle(session_words)
     return session_words
@@ -77,7 +79,6 @@ def play_game_session(previous_score, user_input):
         question = Question(current_word)
         question.get_user_answer()
         is_correct = question.check_answer()
-        question.display()
         if is_correct:
             score += 1
     print(f"Final score: {score}/5")
