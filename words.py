@@ -73,7 +73,7 @@ init_colors_easy = [
     "Purple",
     "Brown"
 ]
-init_colors_diff = []  # Dynamic only — populated by the flagging system
+init_colors_diff = ["Gray", "Gold", "Silver"]
 
 init_colors = {
     "easy": init_colors_easy,
