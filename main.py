@@ -1,4 +1,3 @@
-import game
-from game import get_score
+from game import play_game_session
 
-get_score()
+play_game_session()

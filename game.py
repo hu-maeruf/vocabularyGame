@@ -1,15 +1,6 @@
 import random
 from words import init_animals, init_fruits_veg, init_colors
 
-def get_user_input():
-    while True:
-        chosen_world = input(
-            "**** Choose a world!! *****\n\tType 'A' for Animal\n\tType 'B' for Fruit & Vegetable\n\tType 'C' for Color\n\tType 'D' for Mixed\n\nInput: ").lower()
-        if chosen_world == 'a' or chosen_world == 'b' or chosen_world == 'c' or chosen_world == 'd':
-            return chosen_world
-        else:
-            print("Invalid input. Please try again.")
-
 class Question:
     def __init__(self, word):
         self.word = word
@@ -27,47 +18,59 @@ class Question:
     def check_answer(self):
         return self.answer == self.word.lower()
 
-def get_session_list(chosen_letter, state):
-    if chosen_letter == 'a':
-        session_word = init_animals[state].copy()
-    elif chosen_letter == 'b':
-        session_word = init_fruits_veg[state].copy()
-    elif chosen_letter == 'c':
-        session_word = init_colors[state].copy()
-    else:
-        session_word = init_animals[state].copy() + init_fruits_veg[state].copy() + init_colors[state].copy()
-    return session_word
+# Choose a category/world
+def choose_category():
+    while True:
+        chosen_world = input(
+            "**** Choose a world!! *****\n\tType 'A' for Animal\n\tType 'B' for Fruit & Vegetable\n\tType 'C' for Color\n\tType 'D' for Mixed\n\nInput: ").lower()
+        if chosen_world == 'a' or chosen_world == 'b' or chosen_world == 'c' or chosen_world == 'd':
+            return chosen_world
+        else:
+            print("Invalid input. Please try again.")
 
-def session_word_list(user_input, previous_score):
+# Get words by category and difficulty
+def get_words_list(chosen_letter, difficulty):
+    if chosen_letter == 'a':
+        words = init_animals[difficulty].copy()
+    elif chosen_letter == 'b':
+        words = init_fruits_veg[difficulty].copy()
+    elif chosen_letter == 'c':
+        words = init_colors[difficulty].copy()
+    else:
+        words = init_animals[difficulty].copy() + init_fruits_veg[difficulty].copy() + init_colors[difficulty].copy()
+    return words
+
+# Create a list of words for one game session
+def create_session_words(user_input, previous_score):
     # Shuffled list of words
     if previous_score >= 4:
-        session_words = get_session_list(user_input, "diff")
+        session_words = get_words_list(user_input, "diff")
 
     elif previous_score == 3:
-        easy_words = get_session_list(user_input, "easy")
-        diff_words = get_session_list(user_input, "diff")
+        easy_words = get_words_list(user_input, "easy")
+        diff_words = get_words_list(user_input, "diff")
         session_words = random.sample(easy_words,2) + random.sample(diff_words,3)
 
     else:
-        session_words = get_session_list(user_input, "easy")
+        session_words = get_words_list(user_input, "easy")
 
     random.shuffle(session_words)
     return session_words
 
-def get_score():
-    current_round = 0
+# Play 5 rounds in one game session
+def play_game_session():
+    round_number = 0
+    user_input = choose_category()
     score = 0
-    user_input = get_user_input()
-    session_words = session_word_list(user_input)
-    while current_round < 5:
-        selected_word = session_words[current_round]
-        current_round += 1
-        print(f"****Round {current_round}****")
-        question = Question(selected_word)
+    session_words = create_session_words(user_input, 0)
+    while round_number < 5:
+        current_word = session_words[round_number]
+        round_number += 1
+        print(f"****Round {round_number}****")
+        question = Question(current_word)
         question.get_user_answer()
         is_correct = question.check_answer()
         question.display()
         if is_correct:
             score += 1
-
     print(f"Final score: {score}/5")
