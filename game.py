@@ -66,9 +66,8 @@ def create_session_words(user_input, previous_score):
     return session_words
 
 # Play 5 rounds in one game session
-def play_game_session(previous_score):
+def play_game_session(previous_score, user_input):
     round_number = 0
-    user_input = choose_category()
     score = 0
     session_words = create_session_words(user_input, previous_score)
     while round_number < 5:
