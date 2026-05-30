@@ -27,20 +27,20 @@ class Question:
     def check_answer(self):
         return self.answer == self.word.lower()
 
-def get_session_list(chosen_letter):
+def get_session_list(chosen_letter, state):
     if chosen_letter == 'a':
-        session_word = init_animals["easy"].copy()
+        session_word = init_animals[state].copy()
     elif chosen_letter == 'b':
-        session_word = init_fruits_veg["easy"].copy()
+        session_word = init_fruits_veg[state].copy()
     elif chosen_letter == 'c':
-        session_word = init_colors["easy"].copy()
+        session_word = init_colors[state].copy()
     else:
-        session_word = init_animals["easy"].copy() + init_fruits_veg["easy"].copy() + init_colors["easy"].copy()
+        session_word = init_animals[state].copy() + init_fruits_veg[state].copy() + init_colors[state].copy()
     return session_word
 
 def session_word_list(user_input):
     # Shuffled list of words
-    session_words = get_session_list(user_input)
+    session_words = get_session_list(user_input, "easy")
     random.shuffle(session_words)
     return session_words
 
