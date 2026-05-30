@@ -10,20 +10,31 @@ DIFFICULTY_EASY = "easy"
 DIFFICULTY_DIFFICULT = "diff"
 
 class Question:
-    def __init__(self, word):
+    def __init__(self, word, word_list):
         self.word = word
+        self.word_list = word_list
         self.answer = None
+    def create_question(self):
+        self.remaining_words = [item for item in self.word_list if item != self.word]
+        self.choice_list = random.sample(self.remaining_words, 3)
+        self.choice_list.append(self.word)
+        random.shuffle(self.choice_list)
+
+        return f"What is this {self.word}?\nA. {self.choice_list[0]}\nB. {self.choice_list[1]}\nC. {self.choice_list[2]}\nD. {self.choice_list[3]}"
 
     def get_user_answer(self):
-        self.answer = input(f"What is this {self.word}?\nAnswer: ").strip().lower()
+        self.question = self.create_question()
+        while True:
+            self.answer = input(f"{self.question}\n").strip().lower()
+            if self.answer in ["a", "b", "c", "d"]:
+                break
+            print("Invalid input. Please enter A, B, C or D.")
 
     def check_answer(self):
-        if self.answer == self.word.lower():
-            print("Correct!")
-            return True
-        else:
-            print("Incorrect!")
-            return False
+        index = {"a": 0, "b": 1, "c": 2, "d": 3}
+        self.correct = self.choice_list[index[self.answer]] == self.word
+        print("Correct!" if self.correct else "Incorrect!")
+        return self.correct
 
 # Choose a category/world
 def choose_category():
@@ -76,7 +87,7 @@ def play_game_session(previous_score, user_input):
         current_word = session_words[round_number]
         round_number += 1
         print(f"****Round {round_number}****")
-        question = Question(current_word)
+        question = Question(current_word, session_words)
         question.get_user_answer()
         is_correct = question.check_answer()
         if is_correct:
