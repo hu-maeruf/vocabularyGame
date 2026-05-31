@@ -46,33 +46,39 @@ def choose_category():
         else:
             print("Invalid input. Please try again.")
 
-# Get words by category and difficulty
+# Returns both word list and hints dictionary for the given category and difficulty
 def get_words_list(chosen_letter, difficulty):
     if chosen_letter == CATEGORY_ANIMALS:
-        words = init_animals[difficulty].copy()
+        data = init_animals[difficulty]
     elif chosen_letter == CATEGORY_FRUITS_VEG:
-        words = init_fruits_veg[difficulty].copy()
+        data = init_fruits_veg[difficulty]
     elif chosen_letter == CATEGORY_COLORS:
-        words = init_colors[difficulty].copy()
+        data = init_colors[difficulty]
     else:
-        words = init_animals[difficulty].copy() + init_fruits_veg[difficulty].copy() + init_colors[difficulty].copy()
-    return words
+        data = init_animals[difficulty] + init_fruits_veg[difficulty] + init_colors[difficulty]
+
+    # Build a list of word strings from the list of dicts
+    words = [d["word"] for d in data]
+
+    # Build a dict mapping each word to its hint (None if no hint)
+    hints = {d["word"]: d.get("hint") for d in data }
+    return words, hints
 
 # Create a list of words for one game session
 def create_session_words(user_input, previous_score):
     # Shuffled list of words
     if previous_score >= 4:
-        session_words = get_words_list(user_input, DIFFICULTY_DIFFICULT)
+        session_words, _ = get_words_list(user_input, DIFFICULTY_DIFFICULT)
         print("Session words are from Difficult category.")
 
     elif previous_score == 3:
-        easy_words = get_words_list(user_input, DIFFICULTY_EASY)
-        diff_words = get_words_list(user_input, DIFFICULTY_DIFFICULT)
+        easy_words, _ = get_words_list(user_input, DIFFICULTY_EASY)
+        diff_words, _ = get_words_list(user_input, DIFFICULTY_DIFFICULT)
         session_words = random.sample(easy_words,2) + random.sample(diff_words,3)
         print("Session words are mix of Easy and Difficult category.")
 
     else:
-        session_words = get_words_list(user_input, DIFFICULTY_EASY)
+        session_words, _ = get_words_list(user_input, DIFFICULTY_EASY)
         print("Session words are from Easy category.")
 
     random.shuffle(session_words)
