@@ -7,11 +7,11 @@ init_animals_easy = [
     "Horse",
     "Sheep",
     "Rabbit",
-    "Frog"
+    "Frog",
+    "Elephant",
 ]
 init_animals_diff = [
     "Giraffe",
-    "Elephant",
     "Kangaroo",
     "Crocodile",
     "Dolphin",
@@ -32,14 +32,16 @@ init_fruits_easy = [
     "Mango",
     "Grapes",
     "Lemon",
-    "Papaya"
+    "Papaya",
+    "Grapes"
 ]
 init_fruits_diff = [
     "Pineapple",
     "Watermelon",
     "Strawberry",
     "Blueberry",
-    "Avocado"
+    "Avocado",
+    "Cherry"
 ]
 init_veg_easy = [
     "Carrot",
@@ -54,6 +56,7 @@ init_veg_diff = [
     "Broccoli",
     "Cucumber",
     "Pumpkin",
+    "Ginger"
 ]
 
 init_fruits_veg = {
@@ -73,7 +76,7 @@ init_colors_easy = [
     "Purple",
     "Brown"
 ]
-init_colors_diff = ["Gray", "Gold", "Silver"]
+init_colors_diff = ["Gray", "Gold", "Silver", "Gold", "Silver"]
 
 init_colors = {
     "easy": init_colors_easy,
