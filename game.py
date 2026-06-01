@@ -59,37 +59,37 @@ def get_words_list(chosen_letter, difficulty):
         data = init_animals[difficulty] + init_fruits_veg[difficulty] + init_colors[difficulty]
 
     # Build a list of word strings from the list of dicts
-    words = [d["word"] for d in data]
+    words = [d["name"] for d in data]
 
     # Build a dict mapping each word to its hint (None if no hint)
-    hints = {d["word"]: d.get("hint") for d in data }
+    hints = {d["name"]: d.get("hint") for d in data }
     return words, hints
 
 # Create a list of words for one game session
 def create_session_words(user_input, previous_score):
     # Shuffled list of words
     if previous_score >= 4:
-        session_words, hint = get_words_list(user_input, DIFFICULTY_DIFFICULT)
+        session_words, hint_dict = get_words_list(user_input, DIFFICULTY_DIFFICULT)
         print("Session words are from Difficult category.")
 
     elif previous_score == 3:
-        easy_words, hint = get_words_list(user_input, DIFFICULTY_EASY)
-        diff_words, hint = get_words_list(user_input, DIFFICULTY_DIFFICULT)
+        easy_words, hint_dict = get_words_list(user_input, DIFFICULTY_EASY)
+        diff_words, hint_dict = get_words_list(user_input, DIFFICULTY_DIFFICULT)
         session_words = random.sample(easy_words,2) + random.sample(diff_words,3)
         print("Session words are mix of Easy and Difficult category.")
 
     else:
-        session_words, hint = get_words_list(user_input, DIFFICULTY_EASY)
+        session_words, hint_dict = get_words_list(user_input, DIFFICULTY_EASY)
         print("Session words are from Easy category.")
 
     random.shuffle(session_words)
-    return session_words, hint
+    return session_words, hint_dict
 
 # Play 5 rounds in one game session
 def play_game_session(previous_score, user_input):
     round_number = 0
     score = 0
-    session_words, hint = create_session_words(user_input, previous_score)
+    session_words, hint_dict = create_session_words(user_input, previous_score)
     while round_number < 5:
         current_word = session_words[round_number]
         round_number += 1
@@ -101,7 +101,7 @@ def play_game_session(previous_score, user_input):
             score += 1
             print("Correct!")
         else:
-            hint = get_hint(current_word, hint)
+            hint = get_hint(current_word, hint_dict)
             print(hint)
     print(f"Final score: {score}/5")
     return score
