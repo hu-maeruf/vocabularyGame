@@ -1,22 +1,97 @@
 init_animals_easy = [
-    {"word": "Cat",    "hint": "I say meow"},
-    {"word": "Dog",    "hint": "I say woof"},
-    {"word": "Fish",   "hint": "I swim in water"},
-    {"word": "Duck",   "hint": "I say quack"},
-    {"word": "Cow",    "hint": "I say moo"},
-    {"word": "Horse",  "hint": "I say neigh"},
-    {"word": "Sheep",  "hint": "I say baa"},
-    {"word": "Rabbit", "hint": "I love eating carrots"},
-    {"word": "Frog",   "hint": "I say ribbit"},
-    {"word": "Goat",   "hint": "I say maa"},
+    {
+        "name": "Cat",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I say meow"
+    },
+    {
+        "name": "Dog",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I say woof"
+    },
+    {
+        "name": "Fish",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I swim in water"
+    },
+    {
+        "name": "Duck",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I say quack"
+    },
+    {
+        "name": "Cow",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I say moo"
+    },
+    {
+        "name": "Horse",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I say neigh"
+    },
+    {
+        "name": "Sheep",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I say baa"
+    },
+    {
+        "name": "Rabbit",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I love eating carrots"
+    },
+    {
+        "name": "Frog",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I say ribbit"
+    },
+    {
+        "name": "Goat",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I say maa"
+    },
 ]
 
 init_animals_diff = [
-    {"word": "Elephant",  "hint": "I am the biggest animal"},
-    {"word": "Giraffe",   "hint": "I have a very long neck"},
-    {"word": "Kangaroo",  "hint": "I carry my baby in a pouch"},
-    {"word": "Crocodile", "hint": None},
-    {"word": "Peacock",   "hint": None},
+    {
+        "name": "Elephant",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I am the biggest animal"
+    },
+    {
+        "name": "Giraffe",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I have a very long neck"
+    },
+    {
+        "name": "Kangaroo",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "I carry my baby in a pouch"
+    },
+    {
+        "name": "Crocodile",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Crocodile"
+    },
+    {
+        "name": "Peacock",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Peacock"
+    },
 ]
 
 init_animals = {
@@ -26,41 +101,165 @@ init_animals = {
 
 
 init_fruits_easy = [
-    {"word": "Apple",  "hint": None},
-    {"word": "Banana", "hint": None},
-    {"word": "Orange", "hint": None},
-    {"word": "Mango",  "hint": None},
-    {"word": "Grapes", "hint": None},
-    {"word": "Lemon",  "hint": None},
-    {"word": "Watermelon", "hint": None},
-    {"word": "Strawberry", "hint": None},
-
+    {
+        "name": "Apple",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Apple"
+    },
+    {
+        "name": "Banana",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Banana"
+    },
+    {
+        "name": "Orange",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Orange"
+    },
+    {
+        "name": "Mango",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Mango"
+    },
+    {
+        "name": "Grapes",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Grapes"
+    },
+    {
+        "name": "Lemon",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Lemon"
+    },
+    {
+        "name": "Watermelon",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Watermelon"
+    },
+    {
+        "name": "Strawberry",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Strawberry"
+    },
 ]
 
 init_fruits_diff = [
-    {"word": "Pineapple",  "hint": None},
-    {"word": "Cherry", "hint": None},
-    {"word": "Papaya", "hint": None},
-    {"word": "Blueberry",  "hint": None},
-    {"word": "Avocado",    "hint": None},
-    {"word": "Coconut",    "hint": None},
+    {
+        "name": "Pineapple",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Pineapple"
+    },
+    {
+        "name": "Cherry",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Cherry"
+    },
+    {
+        "name": "Papaya",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Papaya"
+    },
+    {
+        "name": "Blueberry",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Blueberry"
+    },
+    {
+        "name": "Avocado",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Avocado"
+    },
+    {
+        "name": "Coconut",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Coconut"
+    },
 ]
 
 init_veg_easy = [
-    {"word": "Carrot",  "hint": None},
-    {"word": "Corn",    "hint": None},
-    {"word": "Potato",  "hint": None},
-    {"word": "Tomato",  "hint": None},
-    {"word": "Onion",   "hint": None},
-    {"word": "Cabbage", "hint": None},
-    {"word": "Pepper",  "hint": None},
+    {
+        "name": "Carrot",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Carrot"
+    },
+    {
+        "name": "Corn",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Corn"
+    },
+    {
+        "name": "Potato",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Potato"
+    },
+    {
+        "name": "Tomato",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Tomato"
+    },
+    {
+        "name": "Onion",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Onion"
+    },
+    {
+        "name": "Cabbage",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Cabbage"
+    },
+    {
+        "name": "Pepper",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Pepper"
+    },
 ]
 
 init_veg_diff = [
-    {"word": "Broccoli",    "hint": None},
-    {"word": "Cucumber",    "hint": None},
-    {"word": "Pumpkin",     "hint": None},
-    {"word": "Ginger",      "hint": None},
+    {
+        "name": "Broccoli",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Broccoli"
+    },
+    {
+        "name": "Cucumber",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Cucumber"
+    },
+    {
+        "name": "Pumpkin",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Pumpkin"
+    },
+    {
+        "name": "Ginger",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Ginger"
+    },
 ]
 
 init_fruits_veg = {
@@ -70,24 +269,99 @@ init_fruits_veg = {
 
 
 init_colors_easy = [
-    {"word": "Red",    "hint": None},
-    {"word": "Blue",   "hint": None},
-    {"word": "Green",  "hint": None},
-    {"word": "Yellow", "hint": None},
-    {"word": "Pink",   "hint": None},
-    {"word": "Black",  "hint": None},
-    {"word": "White",  "hint": None},
-    {"word": "Orange", "hint": None},
-    {"word": "Purple", "hint": None},
-    {"word": "Brown",  "hint": None},
+    {
+        "name": "Red",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Red"
+    },
+    {
+        "name": "Blue",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Blue"
+    },
+    {
+        "name": "Green",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Green"
+    },
+    {
+        "name": "Yellow",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Yellow"
+    },
+    {
+        "name": "Pink",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Pink"
+    },
+    {
+        "name": "Black",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Black"
+    },
+    {
+        "name": "White",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is White"
+    },
+    {
+        "name": "Orange",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Orange"
+    },
+    {
+        "name": "Purple",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Purple"
+    },
+    {
+        "name": "Brown",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Brown"
+    },
 ]
 
 init_colors_diff = [
-    {"word": "Gray",   "hint": None},
-    {"word": "Gold",   "hint": None},
-    {"word": "Silver", "hint": None},
-    {"word": "Silver", "hint": None},
-    {"word": "Gold", "hint": None},
+    {
+        "name": "Gray",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Gray"
+    },
+    {
+        "name": "Gold",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Gold"
+    },
+    {
+        "name": "Silver",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Silver"
+    },
+    {
+        "name": "Silver",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Silver"
+    },
+    {
+        "name": "Gold",
+        "streak": 0,
+        "attempt": 0,
+        "hint": "This is Gold"
+    },
 ]
 
 init_colors = {
