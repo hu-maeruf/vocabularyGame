@@ -34,7 +34,7 @@ class Question:
     def check_answer(self):
         index = {"a": 0, "b": 1, "c": 2, "d": 3}
         self.correct = self.choice_list[index[self.answer]] == self.word
-        # print("Correct!" if self.correct else "Incorrect!")
+        print("Correct!" if self.correct else "Incorrect!")
         return self.correct
 
 # Choose a category/world
@@ -60,51 +60,76 @@ def get_words_list(chosen_letter, difficulty):
 
     # Build a list of word strings from the list of dicts
     words = [d["name"] for d in data]
-
     # Build a dict mapping each word to its hint (None if no hint)
     hints = {d["name"]: d.get("hint") for d in data }
     return words, hints
 
-# Create a list of words for one game session
-def create_session_words(user_input, previous_score):
-    # Shuffled list of words
-    if previous_score >= 4:
-        session_words, hint_dict = get_words_list(user_input, DIFFICULTY_DIFFICULT)
-        print("Session words are from Difficult category.")
-
-    elif previous_score == 3:
-        easy_words, hint_dict = get_words_list(user_input, DIFFICULTY_EASY)
-        diff_words, hint_dict = get_words_list(user_input, DIFFICULTY_DIFFICULT)
-        session_words = random.sample(easy_words,2) + random.sample(diff_words,3)
-        print("Session words are mix of Easy and Difficult category.")
-
-    else:
-        session_words, hint_dict = get_words_list(user_input, DIFFICULTY_EASY)
-        print("Session words are from Easy category.")
-
-    random.shuffle(session_words)
-    return session_words, hint_dict
-
 # Play 5 rounds in one game session
-def play_game_session(previous_score, user_input):
+def play_game_session (user_input):
     round_number = 0
-    score = 0
-    session_words, hint_dict = create_session_words(user_input, previous_score)
-    while round_number < 5:
-        current_word = session_words[round_number]
+    current_difficulty = DIFFICULTY_EASY
+    session_words, hint_dict = get_words_list(user_input, current_difficulty)
+    seen_words = []
+    random.shuffle(session_words)
+    for current_word in session_words:
+        seen_words.append(current_word)
         round_number += 1
         print(f"****Round {round_number}****")
-        question = Question(current_word, session_words)
-        question.get_user_answer()
-        is_correct = question.check_answer()
-        if is_correct:
-            score += 1
-            print("Correct!")
+        is_correct = play_round(current_word, session_words)
+        game_state = create_state(session_words)
+        update_game_state(is_correct, game_state, current_word, hint_dict)
+
+    # return session_words
+
+# Plays a single round of the game
+def play_round(current_word, session_words):
+    question = Question(current_word, session_words)
+    question.get_user_answer()
+    is_correct = question.check_answer()
+    return is_correct
+
+# Updates the streak based on the result of the round
+def update_game_state(is_correct, game_state, current_word, hint_dict):
+    game_state["attempt"][current_word] += 1
+
+    mastered = game_state["mastered_words"]
+    pending = game_state["pending_words"]
+    wrong= game_state["wrong_words"]
+    streak = game_state["streak"]
+
+    if is_correct:
+        game_state["score"] += 1
+        streak[current_word] += 1
+        if streak[current_word] >= 2:
+                mastered.add(current_word)
+                pending.discard(current_word)
+                wrong.discard(current_word)
         else:
-            hint = get_hint(current_word, hint_dict)
-            print(hint)
-    print(f"Final score: {score}/5")
-    return score
+            pending.add(current_word)
+            wrong.discard(current_word)
+    else:
+        hint = get_hint(current_word, hint_dict)
+        print(f"Hint: {hint}")
+        if current_word not in game_state["mastered_words"]:
+            streak[current_word] = 0
+            pending.discard(current_word)
+            wrong.add(current_word)
+
+def create_state(words):
+    state = {
+        "wrong_words": set(),
+        "pending_words": set(),
+        "mastered_words": set(),
+        "streak": {},
+        "attempt": {},
+        "score": 0,
+    }
+
+    for word in words:
+        state["streak"][word] = 0
+        state["attempt"][word] = 0
+
+    return state
 
 # Returns the hint for the given word
 def get_hint(word, hint_dict):
