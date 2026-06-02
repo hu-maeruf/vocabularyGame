@@ -51,6 +51,7 @@ def play_intro_phase(session_words, hint_dict):
         update_game_state(is_correct, game_state, current_word, hint_dict)
 
         if round_number == 5:
+            show_status(game_state)
             round_number = 0
     return game_state
 
@@ -92,6 +93,13 @@ def update_game_state(is_correct, game_state, current_word, hint_dict):
             streak[current_word] = 0
             pending.discard(current_word)
             wrong.add(current_word)
+
+# Show wrong and mastered words
+def show_status(game_state):
+    mastered_words = "\n".join(game_state["mastered_words"])
+    wrong_words = ", ".join(game_state["wrong_words"])
+    print(f"Mastered words: {mastered_words}" if mastered_words else "No words mastered yet.")
+    print(f"Wrong words: {wrong_words}" if wrong_words else "No wrong words yet.")
 
 def create_state(words):
     state = {
