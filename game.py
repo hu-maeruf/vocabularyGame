@@ -1,13 +1,4 @@
 import random
-from words import init_animals, init_fruits_veg, init_colors
-
-CATEGORY_ANIMALS = "a"
-CATEGORY_FRUITS_VEG = "b"
-CATEGORY_COLORS = "c"
-CATEGORY_MIXED = "d"
-
-DIFFICULTY_EASY = "easy"
-DIFFICULTY_DIFFICULT = "diff"
 
 class Question:
     def __init__(self, word, word_list):
@@ -23,6 +14,10 @@ class Question:
 
         return f"What is this {self.word}?\nA. {self.choice_list[0]}\nB. {self.choice_list[1]}\nC. {self.choice_list[2]}\nD. {self.choice_list[3]}"
 
+    def ask(self):
+        self.get_user_answer()
+        return self.check_answer()
+
     def get_user_answer(self):
         self.question = self.create_question()
         while True:
@@ -37,38 +32,9 @@ class Question:
         print("Correct!" if self.correct else "Incorrect!")
         return self.correct
 
-# Choose a category/world
-def choose_category():
-    while True:
-        chosen_world = input(
-            "**** Choose a world!! *****\n\tType 'A' for Animal\n\tType 'B' for Fruit & Vegetable\n\tType 'C' for Color\n\tType 'D' for Mixed\n\nInput: ").lower()
-        if chosen_world in [CATEGORY_ANIMALS, CATEGORY_FRUITS_VEG, CATEGORY_COLORS, CATEGORY_MIXED]:
-            return chosen_world
-        else:
-            print("Invalid input. Please try again.")
-
-# Returns both word list and hints dictionary for the given category and difficulty
-def get_words_list(chosen_letter, difficulty):
-    if chosen_letter == CATEGORY_ANIMALS:
-        data = init_animals[difficulty]
-    elif chosen_letter == CATEGORY_FRUITS_VEG:
-        data = init_fruits_veg[difficulty]
-    elif chosen_letter == CATEGORY_COLORS:
-        data = init_colors[difficulty]
-    else:
-        data = init_animals[difficulty] + init_fruits_veg[difficulty] + init_colors[difficulty]
-
-    # Build a list of word strings from the list of dicts
-    words = [d["name"] for d in data]
-    # Build a dict mapping each word to its hint (None if no hint)
-    hints = {d["name"]: d.get("hint") for d in data }
-    return words, hints
-
-#
-def play_intro_phase(user_input, difficulty):
+# Introducing all new words for the first time
+def play_intro_phase(session_words, hint_dict):
     round_number = 0
-    current_difficulty = difficulty
-    session_words, hint_dict = get_words_list(user_input, current_difficulty)
     seen_words = []
     random.shuffle(session_words)
     game_state = create_state(session_words)
@@ -85,8 +51,8 @@ def play_intro_phase(user_input, difficulty):
         update_game_state(is_correct, game_state, current_word, hint_dict)
 
         if round_number == 5:
-            show_status(game_state)
             round_number = 0
+    return game_state
 
 # Plays a single round of the game
 def play_round(current_word, session_words):
@@ -95,9 +61,14 @@ def play_round(current_word, session_words):
     is_correct = question.check_answer()
     return is_correct
 
+def play_one_round(current_word, session_words, game_state, hint_dict, round_number):
+    question = Question(current_word, session_words)
+    print(f"****Round {round_number}****")
+    is_correct = question.ask()
+    update_game_state(is_correct, game_state, current_word, hint_dict)
+
 # Updates the streak based on the result of the round
 def update_game_state(is_correct, game_state, current_word, hint_dict):
-    game_state["attempt"][current_word] += 1
 
     mastered = game_state["mastered_words"]
     pending = game_state["pending_words"]
@@ -128,21 +99,13 @@ def create_state(words):
         "pending_words": set(),
         "mastered_words": set(),
         "streak": {},
-        "attempt": {},
         "score": 0,
     }
 
     for word in words:
         state["streak"][word] = 0
-        state["attempt"][word] = 0
 
     return state
-
-def show_status(game_state):
-    mastered_words = "\n".join(game_state["mastered_words"])
-    wrong_words = ", ".join(game_state["wrong_words"])
-    print(f"Mastered words: {mastered_words}")
-    print(f"Wrong words: {wrong_words}")
 
 # Returns the hint for the given word
 def get_hint(word, hint_dict):
