@@ -55,6 +55,34 @@ def play_intro_phase(session_words, hint_dict):
             round_number = 0
     return game_state
 
+# Plays the mastery phase of the game
+def play_mastery_phase(game_state, session_words, hint_dict):
+    total_words = len(session_words)
+    # Number of intro sets + 2 sets of 5 words
+    init_sets = (total_words // 5)
+    min_set = init_sets + 2
+
+    # Run the game for min_sets of 5 words
+    while init_sets < min_set:
+        wrong = list(game_state["wrong_words"])
+        pending = list(game_state["pending_words"])
+        mastered = list(game_state["mastered_words"])
+
+        random.shuffle(wrong)
+        random.shuffle(pending)
+        random.shuffle(mastered)
+
+        # Add the remaining words with wrong first priority, then pending, then mastered, then the rest of the words
+        pool = (wrong + pending + mastered + session_words)[:5]
+
+        for round_number, word in enumerate(pool, start=1):
+            play_one_round(word, session_words, game_state,hint_dict, round_number)
+
+        show_status(game_state)
+        init_sets += 1
+
+    return game_state
+
 # Plays a single round of the game
 def play_round(current_word, session_words):
     question = Question(current_word, session_words)
