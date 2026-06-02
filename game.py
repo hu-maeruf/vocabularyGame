@@ -64,22 +64,29 @@ def get_words_list(chosen_letter, difficulty):
     hints = {d["name"]: d.get("hint") for d in data }
     return words, hints
 
-# Play 5 rounds in one game session
-def play_game_session (user_input):
+#
+def play_intro_phase(user_input, difficulty):
     round_number = 0
-    current_difficulty = DIFFICULTY_EASY
+    current_difficulty = difficulty
     session_words, hint_dict = get_words_list(user_input, current_difficulty)
     seen_words = []
     random.shuffle(session_words)
-    for current_word in session_words:
+    game_state = create_state(session_words)
+    index = 0
+
+    while len(seen_words) != len(session_words):
+        # No two words in a round will be the same
+        current_word = session_words[index]
         seen_words.append(current_word)
         round_number += 1
+        index += 1
         print(f"****Round {round_number}****")
         is_correct = play_round(current_word, session_words)
-        game_state = create_state(session_words)
         update_game_state(is_correct, game_state, current_word, hint_dict)
 
-    # return session_words
+        if round_number == 5:
+            show_status(game_state)
+            round_number = 0
 
 # Plays a single round of the game
 def play_round(current_word, session_words):
@@ -130,6 +137,12 @@ def create_state(words):
         state["attempt"][word] = 0
 
     return state
+
+def show_status(game_state):
+    mastered_words = "\n".join(game_state["mastered_words"])
+    wrong_words = ", ".join(game_state["wrong_words"])
+    print(f"Mastered words: {mastered_words}")
+    print(f"Wrong words: {wrong_words}")
 
 # Returns the hint for the given word
 def get_hint(word, hint_dict):
