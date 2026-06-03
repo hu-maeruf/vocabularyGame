@@ -34,25 +34,23 @@ class Question:
 
 # Introducing all new words for the first time
 def play_intro_phase(session_words, hint_dict):
-    round_number = 0
-    seen_words = []
     random.shuffle(session_words)
     game_state = create_state(session_words)
-    index = 0
+    game_state = new_words_round(session_words, hint_dict, game_state)
+    return game_state
 
-    while len(seen_words) != len(session_words):
-        # No two words in a round will be the same
-        current_word = session_words[index]
-        seen_words.append(current_word)
-        round_number += 1
-        index += 1
-        print(f"****Round {round_number}****")
-        is_correct = play_round(current_word, session_words)
-        update_game_state(is_correct, game_state, current_word, hint_dict)
+def intro_phase_diff(hint_dict, game_state, session_words, hint_diff):
+    words, hint = wrong_words_hint(hint_dict, game_state)
+    for word in words:
+        if word not in session_words:
+            session_words.append(word)
+    hint_diff.update(hint_dict)
 
-        if round_number == 5:
-            show_status(game_state)
-            round_number = 0
+    for word in session_words:
+        if word not in game_state["streak"]:
+            game_state["streak"][word] = 0
+
+    game_state = new_words_round(session_words, hint_diff, game_state)
     return game_state
 
 # Plays the mastery phase of the game
@@ -84,6 +82,31 @@ def play_round(current_word, session_words):
     is_correct = question.check_answer()
     return is_correct
 
+#
+def new_words_round(session_words, hint_dict, game_state):
+    round_number = 0
+    seen_words = []
+    index = 0
+    while len(seen_words) != len(session_words):
+        if index >= len(session_words):
+            index = 0
+            # Break if we've seen all words
+            if len(seen_words) >= len(session_words):
+                break
+        # No two words in a round will be the same
+        current_word = session_words[index]
+        seen_words.append(current_word)
+        round_number += 1
+        index += 1
+        print(f"****Round {round_number}****")
+        is_correct = play_round(current_word, session_words)
+        update_game_state(is_correct, game_state, current_word, hint_dict)
+
+        if round_number == 5:
+            show_status(game_state)
+            round_number = 0
+    return game_state
+
 def play_one_round(current_word, session_words, game_state, hint_dict, round_number):
     question = Question(current_word, session_words)
     print(f"****Round {round_number}****")
@@ -100,7 +123,7 @@ def update_game_state(is_correct, game_state, current_word, hint_dict):
 
     if is_correct:
         game_state["score"] += 1
-        streak[current_word] += 1
+        streak[current_word] = streak.get(current_word, 0) + 1
         if streak[current_word] >= 2:
                 mastered.add(current_word)
                 pending.discard(current_word)
@@ -118,7 +141,7 @@ def update_game_state(is_correct, game_state, current_word, hint_dict):
 
 # Show wrong and mastered words
 def show_status(game_state):
-    mastered_words = "\n".join(game_state["mastered_words"])
+    mastered_words = ", ".join(game_state["mastered_words"])
     wrong_words = ", ".join(game_state["wrong_words"])
     print(f"Mastered words: {mastered_words}" if mastered_words else "No words mastered yet.")
     print(f"Wrong words: {wrong_words}" if wrong_words else "No wrong words yet.")
@@ -139,13 +162,13 @@ def create_state(words):
 
 # Returns the hint for the given word
 def get_hint(word, hint_dict):
-    return hint_dict[word]
+    return hint_dict.get(word, f"This is {word}.")
 
 # Returns the list of wrong words and their hints
 def wrong_words_hint(hint_dict, game_state):
     words = list(game_state["wrong_words"])
     hint = {}
     for word in words:
-        hint[word] = hint_dict[word]
+        hint[word] = hint_dict.get(word, f"This is {word}.")
 
     return words, hint
