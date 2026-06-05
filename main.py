@@ -2,7 +2,7 @@ import pygame
 import screens.home as home
 import screens.category as cat
 from words import init_animals, init_fruits_veg, init_colors
-from game import play_intro_phase, play_mastery_phase, intro_phase_diff
+from game import create_state
 
 CATEGORY_ANIMALS = "animals"
 CATEGORY_FRUITS_VEG = "food"
@@ -22,8 +22,9 @@ def main():
     running = True
     state = "home"
     selected = None
-    session_words = []
-    hint_dict = {}
+    session_words = None
+    hint_dict = None
+    game_state = None
     while running:
         screen.fill((185, 226, 245))
         if state == "home":
@@ -43,6 +44,7 @@ def main():
                 if selected:
                     state = "question"
                     session_words, hint_dict = get_words_list(selected, DIFFICULTY_EASY)
+                    game_state = create_state(session_words)
             elif state == "question":
                 pass
             elif state == "win":
