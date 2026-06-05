@@ -22,6 +22,8 @@ def main():
     running = True
     state = "home"
     selected = None
+    session_words = []
+    hint_dict = {}
     while running:
         screen.fill((185, 226, 245))
         if state == "home":
@@ -40,12 +42,30 @@ def main():
                 selected = cat.handle_events(cat_btn, event)
                 if selected:
                     state = "question"
+                    session_words, hint_dict = get_words_list(selected, DIFFICULTY_EASY)
             elif state == "question":
                 pass
             elif state == "win":
                 pass
 
         pygame.display.update()
+
+def get_words_list(chosen_letter, difficulty):
+    if chosen_letter == CATEGORY_ANIMALS:
+        data = init_animals[difficulty]
+    elif chosen_letter == CATEGORY_FRUITS_VEG:
+        data = init_fruits_veg[difficulty]
+    elif chosen_letter == CATEGORY_COLORS:
+        data = init_colors[difficulty]
+    else:
+        data = init_animals[difficulty] + init_fruits_veg[difficulty] + init_colors[difficulty]
+
+    # Build a list of word strings from the list of dicts
+    words = [d["name"] for d in data]
+    # Build a dict mapping each word to its hint (None if no hint)
+    hints = {d["name"]: d.get("hint") for d in data }
+
+    return words, hints
 
 if __name__ == "__main__":
     main()
