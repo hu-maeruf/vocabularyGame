@@ -14,20 +14,21 @@ DIFFICULTY_DIFFICULT = "diff"
 pygame.init()
 
 def main():
-    screen = pygame.display.set_mode((800, 600))
-    button_rec, text_surface, text_rect = home.init()
+    screen = pygame.display.set_mode((1200, 600))
+    home_btn = home.init(screen)
     pygame.display.set_caption("Vocabulary Adventure")
     running = True
     state = "home"
     while running:
         screen.fill((185, 226, 245))
         if state == "home":
-            home.draw(screen, button_rec, text_surface, text_rect)
+            home.draw(home_btn, screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if state == "home":
-                state = home.handle_events(event, state, button_rec)
+                if home_btn.is_clicked(event):
+                    state = "category"
             elif state == "category":
                 pass
             elif state == "question":
