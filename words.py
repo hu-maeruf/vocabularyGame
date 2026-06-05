@@ -1,14 +1,14 @@
 init_animals_easy = [
-    {"name": "Cat", "hint": "I say meow"},
-    {"name": "Dog", "hint": "I say woof"},
-    {"name": "Fish", "hint": "I swim in water"},
-    {"name": "Duck", "hint": "I say quack"},
-    {"name": "Cow", "hint": "I say moo"},
-    {"name": "Horse", "hint": "I say neigh"},
-    {"name": "Sheep", "hint": "I say baa"},
-    {"name": "Rabbit", "hint": "I love eating carrots"},
-    {"name": "Frog", "hint": "I say ribbit"},
-    {"name": "Goat", "hint": "I say maa"},
+    {"name": "Cat", "hint": "I say meow", "image": "assets/animals/cat.png"},
+    {"name": "Dog", "hint": "I say woof", "image": "assets/animals/dog.png"},
+    {"name": "Fish", "hint": "I swim in water", "image": "assets/animals/fish.png"},
+    {"name": "Duck", "hint": "I say quack", "image": "assets/animals/duck.png"},
+    {"name": "Cow", "hint": "I say moo", "image": "assets/animals/cow.png"},
+    {"name": "Horse", "hint": "I say neigh", "image": "assets/animals/horse.png"},
+    {"name": "Sheep", "hint": "I say baa", "image": "assets/animals/sheep.png"},
+    {"name": "Rabbit", "hint": "I love eating carrots", "image": "assets/animals/rabbit.png"},
+    {"name": "Frog", "hint": "I say ribbit", "image": "assets/animals/frog.png"},
+    {"name": "Goat", "hint": "I say maa", "image": "assets/animals/goat.png"},
 ]
 
 init_animals_diff = [
