@@ -1,6 +1,8 @@
+import random
 import pygame
 import screens.home as home
 import screens.category as cat
+import screens.question as question
 from words import init_animals, init_fruits_veg, init_colors
 from game import create_state
 
@@ -17,22 +19,28 @@ pygame.init()
 def main():
     screen = pygame.display.set_mode((1200, 600))
     home_btn = home.init(screen)
-    cat_btn = cat.init()
+    category_btn = cat.init()
     pygame.display.set_caption("Vocabulary Adventure")
     running = True
     state = "home"
     selected = None
     session_words = None
+    img_dict = None
     hint_dict = None
     game_state = None
+    current_index = 0
+    current_word = None
+    img_rect = None
+    word_img = None
     while running:
         screen.fill((185, 226, 245))
         if state == "home":
             home.draw(home_btn, screen)
         elif state == "category":
-            cat.draw(cat_btn, screen)
+            cat.draw(category_btn, screen)
         elif state == "question":
-            pass
+            if word_img and img_rect:
+                question.draw(screen, word_img, img_rect)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -40,11 +48,13 @@ def main():
                 if home_btn.is_clicked(event):
                     state = "category"
             elif state == "category":
-                selected = cat.handle_events(cat_btn, event)
+                selected = cat.handle_events(category_btn, event)
                 if selected:
                     state = "question"
-                    session_words, hint_dict = get_words_list(selected, DIFFICULTY_EASY)
+                    session_words, hint_dict, img_dict = get_words_list(selected, DIFFICULTY_EASY)
+                    current_word = session_words[current_index]
                     game_state = create_state(session_words)
+                    word_img, img_rect = question.init(current_word, img_dict)
             elif state == "question":
                 pass
             elif state == "win":
@@ -64,10 +74,13 @@ def get_words_list(chosen_letter, difficulty):
 
     # Build a list of word strings from the list of dicts
     words = [d["name"] for d in data]
+    random.shuffle(words)
     # Build a dict mapping each word to its hint (None if no hint)
     hints = {d["name"]: d.get("hint") for d in data }
 
-    return words, hints
+    img = {d["name"]: pygame.image.load(d.get("image")).convert_alpha() for d in data}
+
+    return words, hints, img
 
 if __name__ == "__main__":
     main()
