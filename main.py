@@ -32,6 +32,7 @@ def main():
     current_word = None
     img_rect = None
     word_img = None
+    choice_buttons = None
     while running:
         screen.fill((185, 226, 245))
         if state == "home":
@@ -40,7 +41,7 @@ def main():
             cat.draw(category_btn, screen)
         elif state == "question":
             if word_img and img_rect:
-                question.draw(screen, word_img, img_rect)
+                question.draw(screen, word_img, img_rect, choice_buttons)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -54,9 +55,15 @@ def main():
                     session_words, hint_dict, img_dict = get_words_list(selected, DIFFICULTY_EASY)
                     current_word = session_words[current_index]
                     game_state = create_state(session_words)
-                    word_img, img_rect = question.init(current_word, img_dict)
+                    word_img, img_rect, choice_buttons = question.init(current_word, img_dict, session_words)
             elif state == "question":
-                pass
+                chosen_word = question.handle_events(choice_buttons, event)
+                if chosen_word:
+                    current_index += 1
+                    if chosen_word == current_word.lower():
+                        print("Correct!")
+                    else:
+                        print("Incorrect!")
             elif state == "win":
                 pass
 
