@@ -1,6 +1,7 @@
 import pygame
 from game import Question
 from components.button import Button
+from words import init_animals, init_fruits_veg, init_colors
 
 def init(word, img_dict, session_words):
     word_img = img_dict[word]
@@ -28,5 +29,18 @@ def handle_events(buttons, event):
     for button in buttons:
         if button.is_clicked(event):
             full_text = button.text
-            answer = full_text[3:].lower()
+            answer = full_text[3:]
             return answer
+
+def get_img(chosen_letter, difficulty):
+    if chosen_letter == "animals":
+        data = init_animals[difficulty]
+    elif chosen_letter == "food":
+        data = init_fruits_veg[difficulty]
+    elif chosen_letter == "colors":
+        data = init_colors[difficulty]
+    else:
+        data = init_animals[difficulty] + init_fruits_veg[difficulty] + init_colors[difficulty]
+
+    img_dict = {d["name"]: pygame.image.load(d.get("image")) for d in data}
+    return img_dict
