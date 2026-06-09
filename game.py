@@ -1,174 +1,163 @@
 import random
 
+from words import init_animals, init_fruits_veg, init_colors
+
+CATEGORY_ANIMALS = "animals"
+CATEGORY_FRUITS_VEG = "food"
+CATEGORY_COLORS = "colors"
+CATEGORY_MIXED = "mixed"
+
+DIFFICULTY_EASY = "easy"
+DIFFICULTY_DIFFICULT = "diff"
+
 class Question:
     def __init__(self, word, word_list):
         self.word = word
         self.word_list = word_list
-        self.answer = None
 
     def create_question(self):
         self.remaining_words = [item for item in self.word_list if item != self.word]
         self.choice_list = random.sample(self.remaining_words, 3)
         self.choice_list.append(self.word)
         random.shuffle(self.choice_list)
+        return self.choice_list[0], self.choice_list[1], self.choice_list[2], self.choice_list[3]
 
-        return f"What is this {self.word}?\nA. {self.choice_list[0]}\nB. {self.choice_list[1]}\nC. {self.choice_list[2]}\nD. {self.choice_list[3]}"
+class GameSession:
+    def __init__(self):
+        self.session_words = None
+        self.hint_dict = None
+        self.game_state = None
+        self.current_word = None
+        self.current_index = 0
+        self.pool = []
+        self.pool_index = 0
+        self.phase = "intro"
+        self.game_over = False
+        self.difficulty = "easy"
+        self.category = None
 
-    def ask(self):
-        self.get_user_answer()
-        return self.check_answer()
+    def check_answer(self, answer, word):
+        return answer == word
 
-    def get_user_answer(self):
-        self.question = self.create_question()
-        while True:
-            self.answer = input(f"{self.question}\n").strip().lower()
-            if self.answer in ["a", "b", "c", "d"]:
-                break
-            print("Invalid input. Please enter A, B, C or D.")
+    # Move to next word after an answer
+    def advance(self, is_correct):
+        update_game_state(is_correct, self.game_state, self.current_word, self.hint_dict)
 
-    def check_answer(self):
-        index = {"a": 0, "b": 1, "c": 2, "d": 3}
-        self.correct = self.choice_list[index[self.answer]] == self.word
-        print("Correct!" if self.correct else "Incorrect!")
-        return self.correct
+        if self.phase == "intro":
+            self.current_index += 1
+            if self.current_index >= len(self.session_words):
+                self.phase = "mastery"
+                self.build_pool()
+            else:
+                self.current_word = self.session_words[self.current_index]
+        else:
+            self.pool_index += 1
+            if self.pool_index >= len(self.pool):
+                if self.check_threshold():
+                    if self.difficulty == DIFFICULTY_EASY:
+                        self.difficulty = DIFFICULTY_DIFFICULT
+                        self.intro_phase_diff()
+                        return
+                    else:
+                        self.game_over = True
+                        return
+                self.build_pool()
+            else:
+                self.current_word = self.pool[self.pool_index]
 
-# Introducing all new words for the first time
-def play_intro_phase(session_words, hint_dict):
-    random.shuffle(session_words)
-    game_state = create_state(session_words)
-    game_state = new_words_round(session_words, hint_dict, game_state)
-    return game_state
+# Builds priority pool of 5 words for mastery phase.
+    def build_pool(self):
+        wrong = list(self.game_state["wrong_words"])
+        pending = list(self.game_state["pending_words"])
+        mastered = list(self.game_state["mastered_words"])
+        random.shuffle(wrong)
+        random.shuffle(pending)
+        random.shuffle(mastered)
+        self.pool = (wrong + pending + mastered + self.session_words)[:5]
+        self.pool_index = 0
+        self.current_word = self.pool[0]
 
-def intro_phase_diff(hint_dict, game_state, session_words, hint_diff):
-    words, hint = wrong_words_hint(hint_dict, game_state)
-    for word in words:
-        if word not in session_words:
-            session_words.append(word)
-    hint_diff.update(hint_dict)
+    def check_threshold(self):
+        no_mastered = len(self.game_state["mastered_words"])
+        total = len(self.session_words)
+        if self.difficulty == DIFFICULTY_EASY:
+            return ((no_mastered / total) * 100) > 75
+        else:
+            return no_mastered == total
 
-    for word in session_words:
-        if word not in game_state["streak"]:
-            game_state["streak"][word] = 0
+    def intro_phase_diff(self):
+        words, hint = self.wrong_words_hint()
+        self.session_words, self.hint_dict = get_words_list(self)
+        for word in words:
+            if word not in self.session_words:
+                self.session_words.append(word)
+        self.hint_dict.update(hint)
+        self.game_state = create_state(self.session_words)
+        for word in self.session_words:
+            if word not in self.game_state["streak"]:
+                self.game_state["streak"][word] = 0
+        self.current_index = 0
+        self.current_word = self.session_words[0]
+        self.phase = "intro"
 
-    game_state = new_words_round(session_words, hint_diff, game_state)
-    return game_state
+    # Returns the list of wrong words and their hints
+    def wrong_words_hint(self):
+        words = list(self.game_state["wrong_words"])
+        hint = {}
+        for word in words:
+            hint[word] = self.hint_dict.get(word, f"This is {word}.")
 
-# Plays the mastery phase of the game
-def play_mastery_phase(game_state, session_words, hint_dict):
-    total_words = len(session_words)
+        return words, hint
 
-    wrong = list(game_state["wrong_words"])
-    pending = list(game_state["pending_words"])
-    mastered = list(game_state["mastered_words"])
+def play_intro_phase(session, difficulty):
+    session.session_words, session.hint_dict = get_words_list(session)
+    random.shuffle(session.session_words)
+    session.game_state = create_state(session.session_words)
+    session.current_index = 0
+    session.current_word = session.session_words[0]
 
-    random.shuffle(wrong)
-    random.shuffle(pending)
-    random.shuffle(mastered)
+def get_words_list(session):
+    if session.category == CATEGORY_ANIMALS:
+        data = init_animals[session.difficulty]
+    elif session.category == CATEGORY_FRUITS_VEG:
+        data = init_fruits_veg[session.difficulty]
+    elif session.category == CATEGORY_COLORS:
+        data = init_colors[session.difficulty]
+    else:
+        data = init_animals[session.difficulty] + init_fruits_veg[session.difficulty] + init_colors[session.difficulty]
+    words = [d["name"] for d in data]
+    hints = {d["name"]: d.get("hint") for d in data}
+    return words, hints
 
-    # Add the remaining words with wrong first priority, then pending, then mastered, then the rest of the words
-    pool = (wrong + pending + mastered + session_words)[:5]
-
-    for round_number, word in enumerate(pool, start=1):
-        play_one_round(word, session_words, game_state,hint_dict, round_number)
-
-    show_status(game_state)
-
-    return game_state
-
-# Plays a single round of the game
-def play_round(current_word, session_words):
-    question = Question(current_word, session_words)
-    question.get_user_answer()
-    is_correct = question.check_answer()
-    return is_correct
-
-#
-def new_words_round(session_words, hint_dict, game_state):
-    round_number = 0
-    seen_words = []
-    index = 0
-    while len(seen_words) != len(session_words):
-        if index >= len(session_words):
-            index = 0
-            # Break if we've seen all words
-            if len(seen_words) >= len(session_words):
-                break
-        # No two words in a round will be the same
-        current_word = session_words[index]
-        seen_words.append(current_word)
-        round_number += 1
-        index += 1
-        print(f"****Round {round_number}****")
-        is_correct = play_round(current_word, session_words)
-        update_game_state(is_correct, game_state, current_word, hint_dict)
-
-        if round_number == 5:
-            show_status(game_state)
-            round_number = 0
-    return game_state
-
-def play_one_round(current_word, session_words, game_state, hint_dict, round_number):
-    question = Question(current_word, session_words)
-    print(f"****Round {round_number}****")
-    is_correct = question.ask()
-    update_game_state(is_correct, game_state, current_word, hint_dict)
-
-# Updates the streak based on the result of the round
 def update_game_state(is_correct, game_state, current_word, hint_dict):
-
     mastered = game_state["mastered_words"]
     pending = game_state["pending_words"]
-    wrong= game_state["wrong_words"]
+    wrong = game_state["wrong_words"]
     streak = game_state["streak"]
-
     if is_correct:
         game_state["score"] += 1
         streak[current_word] = streak.get(current_word, 0) + 1
         if streak[current_word] >= 2:
-                mastered.add(current_word)
-                pending.discard(current_word)
-                wrong.discard(current_word)
+            mastered.add(current_word)
+            pending.discard(current_word)
+            wrong.discard(current_word)
         else:
             pending.add(current_word)
             wrong.discard(current_word)
     else:
-        hint = get_hint(current_word, hint_dict)
-        print(f"Hint: {hint}")
-        if current_word not in game_state["mastered_words"]:
+        if current_word not in mastered:
             streak[current_word] = 0
             pending.discard(current_word)
             wrong.add(current_word)
 
-# Show wrong and mastered words
-def show_status(game_state):
-    mastered_words = ", ".join(game_state["mastered_words"])
-    wrong_words = ", ".join(game_state["wrong_words"])
-    print(f"Mastered words: {mastered_words}" if mastered_words else "No words mastered yet.")
-    print(f"Wrong words: {wrong_words}" if wrong_words else "No wrong words yet.")
-
 def create_state(words):
-    state = {
+    return {
         "wrong_words": set(),
         "pending_words": set(),
         "mastered_words": set(),
-        "streak": {},
+        "streak": {word: 0 for word in words},
         "score": 0,
     }
 
-    for word in words:
-        state["streak"][word] = 0
-
-    return state
-
-# Returns the hint for the given word
 def get_hint(word, hint_dict):
     return hint_dict.get(word, f"This is {word}.")
-
-# Returns the list of wrong words and their hints
-def wrong_words_hint(hint_dict, game_state):
-    words = list(game_state["wrong_words"])
-    hint = {}
-    for word in words:
-        hint[word] = hint_dict.get(word, f"This is {word}.")
-
-    return words, hint
