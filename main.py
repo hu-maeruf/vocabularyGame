@@ -1,20 +1,13 @@
-import random
 import pygame
 import screens.home as home
 import screens.category as cat
 import screens.question as question
-from words import init_animals, init_fruits_veg, init_colors
-from game import create_state
+from game import GameSession, play_intro_phase
 
-CATEGORY_ANIMALS = "animals"
-CATEGORY_FRUITS_VEG = "food"
-CATEGORY_COLORS = "colors"
-CATEGORY_MIXED = "mixed"
+pygame.init()
 
 DIFFICULTY_EASY = "easy"
 DIFFICULTY_DIFFICULT = "diff"
-
-pygame.init()
 
 def main():
     screen = pygame.display.set_mode((1200, 600))
@@ -22,17 +15,17 @@ def main():
     category_btn = cat.init()
     pygame.display.set_caption("Vocabulary Adventure")
     running = True
+    session = GameSession()
     state = "home"
-    selected = None
-    session_words = None
-    img_dict = None
-    hint_dict = None
-    game_state = None
-    current_index = 0
-    current_word = None
-    img_rect = None
     word_img = None
+    img_rect = None
     choice_buttons = None
+    img_dict = None
+    feedback_active = False
+    feedback_start_time = 0
+    feedback_type = None
+    pending_answer = None
+    clock = pygame.time.Clock()
     while running:
         screen.fill((185, 226, 245))
         if state == "home":
@@ -40,8 +33,22 @@ def main():
         elif state == "category":
             cat.draw(category_btn, screen)
         elif state == "question":
-            if word_img and img_rect:
+            if word_img and img_rect and choice_buttons:
                 question.draw(screen, word_img, img_rect, choice_buttons)
+            if feedback_active:
+                current_time = pygame.time.get_ticks()
+                if feedback_type == "correct":
+                    pygame.draw.rect(screen, (0, 255, 0), screen.get_rect(), 10)  # green border
+                else:
+                    pygame.draw.rect(screen, (255, 0, 0), screen.get_rect(), 10)
+                if current_time - feedback_start_time >= 1000:
+                    feedback_active = False
+                    session.advance(pending_answer)
+                    if session.game_over:
+                        state = "win"
+                    else:
+                        img_dict = question.get_img(session.category, session.difficulty)
+                        word_img, img_rect, choice_buttons = question.init(session.current_word, img_dict, session.session_words)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -49,45 +56,26 @@ def main():
                 if home_btn.is_clicked(event):
                     state = "category"
             elif state == "category":
-                selected = cat.handle_events(category_btn, event)
-                if selected:
+                session.category = cat.handle_events(category_btn, event)
+                if session.category:
                     state = "question"
-                    session_words, hint_dict, img_dict = get_words_list(selected, DIFFICULTY_EASY)
-                    current_word = session_words[current_index]
-                    game_state = create_state(session_words)
-                    word_img, img_rect, choice_buttons = question.init(current_word, img_dict, session_words)
+                    play_intro_phase(session, DIFFICULTY_EASY)
+                    img_dict = question.get_img(session.category, DIFFICULTY_EASY)
+                    word_img, img_rect, choice_buttons = question.init(
+                        session.current_word, img_dict, session.session_words
+                    )
             elif state == "question":
-                chosen_word = question.handle_events(choice_buttons, event)
-                if chosen_word:
-                    current_index += 1
-                    if chosen_word == current_word.lower():
-                        print("Correct!")
-                    else:
-                        print("Incorrect!")
+                answer = question.handle_events(choice_buttons, event)
+                if answer:
+                    is_correct = session.check_answer(answer, session.current_word)
+                    feedback_active = True
+                    feedback_start_time = pygame.time.get_ticks()
+                    feedback_type = "correct" if is_correct else "wrong"
+                    pending_answer = is_correct
             elif state == "win":
                 pass
-
+        clock.tick(60)
         pygame.display.update()
-
-def get_words_list(chosen_letter, difficulty):
-    if chosen_letter == CATEGORY_ANIMALS:
-        data = init_animals[difficulty]
-    elif chosen_letter == CATEGORY_FRUITS_VEG:
-        data = init_fruits_veg[difficulty]
-    elif chosen_letter == CATEGORY_COLORS:
-        data = init_colors[difficulty]
-    else:
-        data = init_animals[difficulty] + init_fruits_veg[difficulty] + init_colors[difficulty]
-
-    # Build a list of word strings from the list of dicts
-    words = [d["name"] for d in data]
-    random.shuffle(words)
-    # Build a dict mapping each word to its hint (None if no hint)
-    hints = {d["name"]: d.get("hint") for d in data }
-
-    img = {d["name"]: pygame.image.load(d.get("image")).convert_alpha() for d in data}
-
-    return words, hints, img
 
 if __name__ == "__main__":
     main()
