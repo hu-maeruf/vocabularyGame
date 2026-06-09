@@ -2,6 +2,7 @@ import pygame
 import screens.home as home
 import screens.category as cat
 import screens.question as question
+import screens.round_summary as round_summary
 from game import GameSession, play_intro_phase
 
 pygame.init()
@@ -20,11 +21,13 @@ def main():
     word_img = None
     img_rect = None
     choice_buttons = None
-    img_dict = None
     feedback_active = False
     feedback_start_time = 0
     feedback_type = None
     pending_answer = None
+    round_summary_btn = None
+    round_summary_text = None
+    round_summary_text_rect = None
     clock = pygame.time.Clock()
     while running:
         screen.fill((185, 226, 245))
@@ -43,12 +46,26 @@ def main():
                     pygame.draw.rect(screen, (255, 0, 0), screen.get_rect(), 10)
                 if current_time - feedback_start_time >= 1000:
                     feedback_active = False
-                    session.advance(pending_answer)
-                    if session.game_over:
+                    status = session.advance(pending_answer)
+                    print(f"Status: {status}, Round counter: {session.round_counter}")
+                    if status == "game_over":
                         state = "win"
+                    elif status == "round_complete":
+                        state = "round_summary"
+                        round_summary_btn, round_summary_text, round_summary_text_rect = round_summary.init(screen)
+                    elif status == "difficulty_up":
+                        state = "round_summary"
+                        easy_imgs = question.get_img(session.category, DIFFICULTY_EASY)
+                        diff_imgs = question.get_img(session.category, DIFFICULTY_DIFFICULT)
+                        img_dict = {**easy_imgs, **diff_imgs}
+                        round_summary_btn, round_summary_text, round_summary_text_rect = round_summary.init(screen)
                     else:
-                        img_dict = question.get_img(session.category, session.difficulty)
+                        easy_imgs = question.get_img(session.category, DIFFICULTY_EASY)
+                        diff_imgs = question.get_img(session.category, DIFFICULTY_DIFFICULT)
+                        img_dict = {**easy_imgs, **diff_imgs}
                         word_img, img_rect, choice_buttons = question.init(session.current_word, img_dict, session.session_words)
+        elif state == "round_summary":
+            round_summary.draw(screen, round_summary_btn, round_summary_text, round_summary_text_rect)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -59,7 +76,7 @@ def main():
                 session.category = cat.handle_events(category_btn, event)
                 if session.category:
                     state = "question"
-                    play_intro_phase(session, DIFFICULTY_EASY)
+                    play_intro_phase(session)
                     img_dict = question.get_img(session.category, DIFFICULTY_EASY)
                     word_img, img_rect, choice_buttons = question.init(
                         session.current_word, img_dict, session.session_words
@@ -72,6 +89,16 @@ def main():
                     feedback_start_time = pygame.time.get_ticks()
                     feedback_type = "correct" if is_correct else "wrong"
                     pending_answer = is_correct
+            elif state == "round_summary":
+                result = round_summary.handle_events(event, round_summary_btn)
+                if result == "question":
+                    state = "question"
+                    easy_imgs = question.get_img(session.category, DIFFICULTY_EASY)
+                    diff_imgs = question.get_img(session.category, DIFFICULTY_DIFFICULT)
+                    img_dict = {**easy_imgs, **diff_imgs}
+                    word_img, img_rect, choice_buttons = question.init(
+                        session.current_word, img_dict, session.session_words
+                    )
             elif state == "win":
                 pass
         clock.tick(60)

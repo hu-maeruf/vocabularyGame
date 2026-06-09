@@ -35,6 +35,7 @@ class GameSession:
         self.game_over = False
         self.difficulty = "easy"
         self.category = None
+        self.round_counter = 0
 
     def check_answer(self, answer, word):
         return answer == word
@@ -42,7 +43,21 @@ class GameSession:
     # Move to next word after an answer
     def advance(self, is_correct):
         update_game_state(is_correct, self.game_state, self.current_word, self.hint_dict)
+        self.round_counter += 1
+        status = self._advance_word()
 
+        # Special statuses always take priority
+        if status in ("difficulty_up", "game_over"):
+            self.round_counter = 0
+            return status
+
+        if self.round_counter == 5:
+            self.round_counter = 0
+            return "round_complete"
+
+        return "next_word"
+
+    def _advance_word(self):
         if self.phase == "intro":
             self.current_index += 1
             if self.current_index >= len(self.session_words):
@@ -50,6 +65,7 @@ class GameSession:
                 self.build_pool()
             else:
                 self.current_word = self.session_words[self.current_index]
+            return "next_word"
         else:
             self.pool_index += 1
             if self.pool_index >= len(self.pool):
@@ -57,10 +73,10 @@ class GameSession:
                     if self.difficulty == DIFFICULTY_EASY:
                         self.difficulty = DIFFICULTY_DIFFICULT
                         self.intro_phase_diff()
-                        return
+                        return "difficulty_up"
                     else:
                         self.game_over = True
-                        return
+                        return "game_over"
                 self.build_pool()
             else:
                 self.current_word = self.pool[self.pool_index]
@@ -70,10 +86,12 @@ class GameSession:
         wrong = list(self.game_state["wrong_words"])
         pending = list(self.game_state["pending_words"])
         mastered = list(self.game_state["mastered_words"])
+        remaining = [w for w in self.session_words if w not in self.game_state["mastered_words"]]
         random.shuffle(wrong)
         random.shuffle(pending)
         random.shuffle(mastered)
-        self.pool = (wrong + pending + mastered + self.session_words)[:5]
+        random.shuffle(remaining)
+        self.pool = (wrong + pending + mastered + remaining)[:5]
         self.pool_index = 0
         self.current_word = self.pool[0]
 
@@ -109,7 +127,7 @@ class GameSession:
 
         return words, hint
 
-def play_intro_phase(session, difficulty):
+def play_intro_phase(session):
     session.session_words, session.hint_dict = get_words_list(session)
     random.shuffle(session.session_words)
     session.game_state = create_state(session.session_words)
