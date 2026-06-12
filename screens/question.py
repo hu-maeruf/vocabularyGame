@@ -3,14 +3,17 @@ from game import Question
 from components.button import Button
 from words import init_animals, init_fruits_veg, init_colors
 
-def init(word, img_dict, session_words):
+def init(word, img_dict):
     word_img = img_dict[word]
     width = word_img.get_width() * 0.5
     height = word_img.get_height() * 0.5
     resize_img = pygame.transform.scale(word_img, (int(width), int(height)))
     img_rect = resize_img.get_rect()
     img_rect.topleft = (469, 60)
-    question = Question(word, session_words)
+    return resize_img, img_rect
+
+def get_buttons(session):
+    question = Question(session.current_word, session.session_words)
     a, b, c, d = question.create_question()
     buttons = [
         Button((150, 400), (200, 70), (0, 0, 0), f"A. {a}", 30),
@@ -18,7 +21,8 @@ def init(word, img_dict, session_words):
         Button((750, 400), (200, 70), (0, 0, 0), f"C. {c}", 30),
         Button((1050, 400), (200, 70), (0, 0, 0), f"D. {d}", 30),
     ]
-    return resize_img, img_rect, buttons
+
+    return buttons
 
 def draw(screen, word_img, img_rect, buttons):
     screen.blit(word_img, img_rect)
