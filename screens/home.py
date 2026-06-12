@@ -1,10 +1,74 @@
 import pygame
 import components.button as button
 
-def init(screen):
-    btn_center = screen.get_rect().center
-    btn = button.Button(btn_center, (200, 70), (255, 255, 255), "Play", 50)
-    return btn
-#
-def draw(btn, screen):
-    btn.draw(screen)
+_assets = {}
+radius = 100
+center_x = 1270 // 2
+center_y = 670 // 2
+arrow_size = radius * 0.45
+
+def init():
+    btn = pygame.rect.Rect(center_x - radius, center_y - radius, radius * 2, radius * 2)
+
+    background = pygame.image.load("assets/images/home/background.png").convert_alpha()
+    _assets["background"] = load_image(background, 0.89)
+
+    voice_icon = pygame.image.load("assets/images/home/recording.png").convert_alpha()
+    _assets["voice_icon"] = load_image(voice_icon, 0.2)
+
+    voice_font = pygame.font.SysFont("Comic Sans MS", 25)
+    text_surface = voice_font.render("Say Play", True, (11, 37, 69))
+
+    return btn, text_surface
+
+def draw(screen,  gloss, triangle_point, arrow_point, font):
+    screen.blit(_assets["background"], (0, 0))
+    # btn.draw(screen)
+    pygame.draw.circle(screen, (217, 144, 4), (center_x, center_y + 4), radius)
+    pygame.draw.circle(screen, (255, 215, 0), (center_x, center_y), radius - 2)
+    pygame.draw.circle(gloss, (255, 255, 255, 75), (radius, radius), radius - 3)
+    pygame.draw.circle(gloss, (0, 0, 0, 0), (radius + 6, radius + 6), radius - 6)
+    screen.blit(gloss, (center_x - radius, center_y - radius))
+    pygame.draw.polygon(screen, (210, 130, 5), triangle_point)
+    pygame.draw.polygon(screen,(255, 253, 240), arrow_point, 3)
+    screen.blit(_assets["voice_icon"], (20, 500))
+    screen.blit(font, (22, 600))
+
+def draw_space_gradient(surface, top_color = (18, 74, 94), bottom_color = (43, 147, 142)):
+    height = surface.get_height()
+    width = surface.get_width()
+    for x in range(height):
+        ratio = x / height
+        r = int(top_color[0] * (1 - ratio) + bottom_color[0] * ratio)
+        g = int(top_color[1] * (1 - ratio) + bottom_color[1] * ratio)
+        b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
+        color = (r, g, b)
+        pygame.draw.line(surface, color, (0, x), (width, x))
+
+def load_image(image, scale):
+    width = int(image.get_width() * scale)
+    height = int(image.get_height() * scale)
+    resize = pygame.transform.scale(image, (width, height))
+
+    return resize
+
+def create_gloss_surface():
+    gloss_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+    return gloss_surface
+
+def triangle_points():
+    shadow_pt1 = (center_x - arrow_size * 0.5, center_y - arrow_size * 0.7 + 3)
+    shadow_pt2 = (center_x - arrow_size * 0.5, center_y + arrow_size * 0.7 + 3)
+    shadow_pt3 = (center_x + arrow_size * 0.9, center_y + 3)
+    arrow_pt1 = (center_x - arrow_size * 0.5, center_y - arrow_size * 0.7)
+    arrow_pt2 = (center_x - arrow_size * 0.5, center_y + arrow_size * 0.7)
+    arrow_pt3 = (center_x + arrow_size * 0.9, center_y)
+    return [shadow_pt1, shadow_pt2, shadow_pt3], [arrow_pt1, arrow_pt2, arrow_pt3]
+
+def is_clicked(event, btn):
+    mouse_pos = pygame.mouse.get_pos()
+    if btn.collidepoint(mouse_pos):
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            return True
+    return False
