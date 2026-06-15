@@ -17,7 +17,7 @@ def main():
     home_btn, font_surface = home.init()
     gloss = home.create_gloss_surface()
     triangle_points, arrow_point = home.triangle_points()
-    category_btn = cat.init()
+    category_btn, cat_title = cat.init(screen)
     pygame.display.set_caption("Vocabulary Adventure")
     running = True
     state = "home"
@@ -37,21 +37,23 @@ def main():
     win_score_rect = None
     play_again_btn = None
     back_btn = None
+    bg_question = None
     clock = pygame.time.Clock()
     while running:
         screen.fill((185, 226, 245))
         if state == "home":
-            home.draw_space_gradient(screen)
+            # home.draw_space_gradient(screen)
             home.draw(screen, gloss, triangle_points, arrow_point, font_surface)
         elif state == "category":
-            cat.draw(category_btn, screen)
+            cat.draw_space_gradient(screen)
+            cat.draw_btn(category_btn, screen, cat_title)
         elif state == "question":
             if word_img and img_rect and choice_buttons:
-                question.draw(screen, word_img, img_rect, choice_buttons)
+                question.draw(screen, word_img, img_rect, choice_buttons, bg_question)
             if feedback_active:
                 current_time = pygame.time.get_ticks()
                 if feedback_type == "correct":
-                    pygame.draw.rect(screen, (0, 255, 0), screen.get_rect(), 10)  # green border
+                    pygame.draw.rect(screen, (0, 255, 0), screen.get_rect(), 10)
                 else:
                     pygame.draw.rect(screen, (255, 0, 0), screen.get_rect(), 10)
                 if current_time - feedback_start_time >= 1000:
@@ -69,8 +71,8 @@ def main():
                         round_summary_btn, round_summary_text, round_summary_text_rect = round_summary.init(screen)
                     else:
                         img_dict = load_image(session)
-                        word_img, img_rect = question.init(session.current_word, img_dict)
-                        choice_buttons = question.get_buttons(session)
+                        word_img, img_rect, bg_question = question.init(session.current_word, img_dict, screen)
+                        choice_buttons = question.get_buttons(session, screen)
         elif state == "round_summary":
             round_summary.draw(screen, round_summary_btn, round_summary_text, round_summary_text_rect)
         elif state == "win":
@@ -87,9 +89,9 @@ def main():
                     state = "question"
                     play_intro_phase(session)
                     img_dict = question.get_img(session.category, DIFFICULTY_EASY)
-                    word_img, img_rect = question.init(
-                        session.current_word, img_dict)
-                    choice_buttons = question.get_buttons(session)
+                    word_img, img_rect, bg_question = question.init(
+                        session.current_word, img_dict, screen)
+                    choice_buttons = question.get_buttons(session, screen)
             elif state == "question":
                 answer = question.handle_events(choice_buttons, event)
                 if answer:
@@ -103,9 +105,9 @@ def main():
                 if result == "question":
                     state = "question"
                     img_dict = load_image(session)
-                    word_img, img_rect = question.init(
-                        session.current_word, img_dict)
-                    choice_buttons = question.get_buttons(session)
+                    word_img, img_rect, bg_question = question.init(
+                        session.current_word, img_dict, screen)
+                    choice_buttons = question.get_buttons(session, screen)
             elif state == "win":
                 result = win.handle_events(event, play_again_btn, back_btn)
                 if result in ("play_again", "category"):
