@@ -34,17 +34,6 @@ def draw(screen,  gloss, triangle_point, arrow_point, font):
     screen.blit(_assets["voice_icon"], (20, 500))
     screen.blit(font, (22, 600))
 
-def draw_space_gradient(surface, top_color = (18, 74, 94), bottom_color = (43, 147, 142)):
-    height = surface.get_height()
-    width = surface.get_width()
-    for x in range(height):
-        ratio = x / height
-        r = int(top_color[0] * (1 - ratio) + bottom_color[0] * ratio)
-        g = int(top_color[1] * (1 - ratio) + bottom_color[1] * ratio)
-        b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
-        color = (r, g, b)
-        pygame.draw.line(surface, color, (0, x), (width, x))
-
 def load_image(image, scale):
     width = int(image.get_width() * scale)
     height = int(image.get_height() * scale)
