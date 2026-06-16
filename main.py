@@ -38,18 +38,22 @@ def main():
     play_again_btn = None
     back_btn = None
     bg_question = None
+    box = None
+    border_box = None
+    sound_btn = None
     clock = pygame.time.Clock()
     while running:
         screen.fill((185, 226, 245))
+        mouse_pos = pygame.mouse.get_pos()
+        # mouse_pressed = pygame.mouse.get_pressed()
         if state == "home":
-            # home.draw_space_gradient(screen)
             home.draw(screen, gloss, triangle_points, arrow_point, font_surface)
         elif state == "category":
             cat.draw_space_gradient(screen)
             cat.draw_btn(category_btn, screen, cat_title)
         elif state == "question":
             if word_img and img_rect and choice_buttons:
-                question.draw(screen, word_img, img_rect, choice_buttons, bg_question)
+                question.draw(screen, word_img, img_rect, choice_buttons,box, border_box, bg_question, sound_btn, mouse_pos)
             if feedback_active:
                 current_time = pygame.time.get_ticks()
                 if feedback_type == "correct":
@@ -71,7 +75,7 @@ def main():
                         round_summary_btn, round_summary_text, round_summary_text_rect = round_summary.init(screen)
                     else:
                         img_dict = load_image(session)
-                        word_img, img_rect, bg_question = question.init(session.current_word, img_dict, screen)
+                        word_img, img_rect, bg_question, box, border_box, sound_btn = question.init(session.current_word, img_dict, screen)
                         choice_buttons = question.get_buttons(session, screen)
         elif state == "round_summary":
             round_summary.draw(screen, round_summary_btn, round_summary_text, round_summary_text_rect)
@@ -89,7 +93,7 @@ def main():
                     state = "question"
                     play_intro_phase(session)
                     img_dict = question.get_img(session.category, DIFFICULTY_EASY)
-                    word_img, img_rect, bg_question = question.init(
+                    word_img, img_rect, bg_question, box, border_box, sound_btn = question.init(
                         session.current_word, img_dict, screen)
                     choice_buttons = question.get_buttons(session, screen)
             elif state == "question":
@@ -105,7 +109,7 @@ def main():
                 if result == "question":
                     state = "question"
                     img_dict = load_image(session)
-                    word_img, img_rect, bg_question = question.init(
+                    word_img, img_rect, bg_question, box, border_box, sound_btn = question.init(
                         session.current_word, img_dict, screen)
                     choice_buttons = question.get_buttons(session, screen)
             elif state == "win":
