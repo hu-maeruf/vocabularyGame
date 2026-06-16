@@ -42,22 +42,19 @@ class GameSession:
     def check_answer(self, answer, word):
         return answer == word
 
-    # Move to next word after an answer
     def advance(self, is_correct):
         update_game_state(is_correct, self.game_state, self.current_word, self.hint_dict)
         self.round_counter += 1
         status = self._advance_word()
 
-        # Special state conditions
         if status in ("difficulty_up", "game_over"):
             self.round_counter = 0
-            self.game_state["round_score"] = 0  # FIX 4: Clear star display container for next round
+            self.game_state["round_score"] = 0
             return status
 
-        # FIX 5: Clean round summary activation on every 5 answered words
         if self.round_counter == 5:
             self.round_counter = 0
-            self.game_state["round_score"] = 0  # Reset visual star counter for next round
+            self.game_state["round_score"] = 0
             return "round_complete"
 
         return "next_word"
@@ -129,14 +126,12 @@ class GameSession:
             hint[word] = self.hint_dict.get(word, f"This is {word}.")
         return words, hint
 
-
 def play_intro_phase(session):
     session.session_words, session.hint_dict = get_words_list(session)
     random.shuffle(session.session_words)
     session.game_state = create_state(session.session_words)
     session.current_index = 0
     session.current_word = session.session_words[0]
-
 
 def get_words_list(session):
     if session.category == CATEGORY_ANIMALS:
@@ -151,14 +146,12 @@ def get_words_list(session):
     hints = {d["name"]: d.get("hint") for d in data}
     return words, hints
 
-
 def update_game_state(is_correct, game_state, current_word, hint_dict):
     mastered = game_state["mastered_words"]
     pending = game_state["pending_words"]
     wrong = game_state["wrong_words"]
     streak = game_state["streak"]
 
-    # FIX 6: Removed the mid-round reset constraint from here to let round_score safely accumulate up to individual question targets
     if is_correct:
         game_state["score"] += 1
         game_state["round_score"] += 1
@@ -176,7 +169,6 @@ def update_game_state(is_correct, game_state, current_word, hint_dict):
             pending.discard(current_word)
             wrong.add(current_word)
 
-
 def create_state(words):
     return {
         "wrong_words": set(),
@@ -186,7 +178,6 @@ def create_state(words):
         "score": 0,
         "round_score": 0,
     }
-
 
 def get_hint(word, hint_dict):
     return hint_dict.get(word, f"This is {word}.")
