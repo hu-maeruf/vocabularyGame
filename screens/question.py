@@ -1,31 +1,71 @@
 import pygame
+import math
 from game import Question
 from components.button import Button
 from words import init_animals, init_fruits_veg, init_colors
+
 
 class QuestionBtn(Button):
     def __init__(self, position, size, color, text, border_radius):
         super().__init__(position, size, color, border_radius)
         self.text = text
-        self.font = pygame.font.SysFont("Arial", 30)
-        self.text_surface = self.font.render(self.text, True, (0,0,0))
-        self.text_rect = self.text_surface.get_rect(center=self.rect.center)
+        self.font = pygame.font.SysFont("Arial", 30, bold=True)
+        self.text_surface = self.font.render(self.text, True, (0, 0, 0))
         self.radius = border_radius
 
+        self.base_color = color
+        self.current_color = color
+
+        self.state = "NORMAL"
+        self.shake_start_time = 0
+        self.bounce_start_time = 0
+
+    def mark_correct(self):
+        self.state = "CORRECT"
+        self.current_color = (130, 220, 130)
+        self.text_surface = self.font.render(self.text, True, (255, 255, 255))
+        self.bounce_start_time = pygame.time.get_ticks()
+
+    def mark_wrong(self):
+        self.state = "WRONG"
+        self.current_color = (255, 120, 120)
+        self.text_surface = self.font.render(self.text, True, (255, 255, 255))
+        self.shake_start_time = pygame.time.get_ticks()
+
     def draw(self, screen):
+        offset_x = 0
+        offset_y = 0
+
+        if self.state == "WRONG":
+            elapsed_time = pygame.time.get_ticks() - self.shake_start_time
+            if elapsed_time < 500:
+                offset_x = math.sin(elapsed_time * 0.05) * 6
+        elif self.state == "CORRECT":
+            elapsed_time = pygame.time.get_ticks() - self.bounce_start_time
+            if elapsed_time < 500:
+                offset_y = -math.sin(elapsed_time * (math.pi / 500)) * 16
+
+        draw_rect = self.rect.copy()
+        draw_rect.x += offset_x
+        draw_rect.y += offset_y
+
         shadow_rect = self.rect.copy()
+        shadow_rect.x += offset_x
         shadow_rect.y += 4
         pygame.draw.rect(screen, (100, 100, 100), shadow_rect, border_radius=self.radius)
-        super().draw(screen)
-        pygame.draw.rect(screen, (145, 185, 235), self.rect, width=3,  border_radius=self.radius)
-        screen.blit(self.text_surface, self.text_rect)
+
+        pygame.draw.rect(screen, self.current_color, draw_rect, border_radius=self.radius)
+        pygame.draw.rect(screen, (145, 185, 235), draw_rect, width=3, border_radius=self.radius)
+
+        text_rect = self.text_surface.get_rect(center=draw_rect.center)
+        screen.blit(self.text_surface, text_rect)
 
 
 class SoundButton:
     def __init__(self, image_path, position=(30, 30), size=(70, 70)):
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, size)
-        self.rect = self.image.get_rect(topleft=(30,30))
+        self.rect = self.image.get_rect(topleft=(30, 30))
         self.font = pygame.font.SysFont("Arial", 16, bold=True)
         self.text_surface = self.font.render("Hear Sound", True, (255, 255, 255))
 
@@ -42,6 +82,42 @@ class SoundButton:
             screen.blit(self.image, self.rect)
 
         screen.blit(self.text_surface, self.text_rect)
+
+
+class StarTracker:
+    def __init__(self, filled_star_path, empty_star_path, screen_width, y_pos=20):
+        self.star_filled = pygame.image.load(filled_star_path).convert_alpha()
+        self.star_filled = pygame.transform.scale(self.star_filled, (40, 40))
+
+        self.star_empty = pygame.image.load(empty_star_path).convert_alpha()
+        self.star_empty = pygame.transform.scale(self.star_empty, (40, 40))
+
+        self.max_stars = 5
+        self.padding_x = 20
+        self.padding_y = 10
+        self.gap = 15
+
+        self.pill_width = (40 * self.max_stars) + (self.gap * (self.max_stars - 1)) + (self.padding_x * 2)
+        self.pill_height = 40 + (self.padding_y * 2)
+
+        self.x = (screen_width - self.pill_width) // 2
+        self.y = y_pos
+
+        self.pill_rect = pygame.Rect(self.x, self.y, self.pill_width, self.pill_height)
+
+    def draw(self, screen, current_score):
+        pygame.draw.rect(screen, (20, 35, 90), self.pill_rect, border_radius=30)
+        pygame.draw.rect(screen, (100, 130, 200), self.pill_rect, width=3, border_radius=30)
+
+        for i in range(self.max_stars):
+            star_x = self.x + self.padding_x + i * (40 + self.gap)
+            star_y = self.y + self.padding_y
+
+            if i < current_score:
+                screen.blit(self.star_filled, (star_x, star_y))
+            else:
+                screen.blit(self.star_empty, (star_x, star_y))
+
 
 def init(word, img_dict, screen):
     word_img = img_dict[word]
@@ -68,9 +144,18 @@ def init(word, img_dict, screen):
     border_thickness = 5
     border_box = box.inflate(border_thickness * 2, border_thickness * 2)
 
-    return resize_img, img_rect, {"rect":bg_rect, "img":bg_img}, box, border_box, sound_btn
+    star_tracker = StarTracker("assets/images/question/star.png", "assets/images/question/image.png",screen.get_width())
+    rocket_img = pygame.image.load("assets/images/question/launch.png").convert_alpha()
+    rocket_img = pygame.transform.scale(rocket_img, (110, 110))
+    rocket_x = border_box.right + 120
+    rocket_y = border_box.centery - 200
+    rocket_rect = rocket_img.get_rect(topleft=(rocket_x,rocket_y))
 
-def get_buttons(session,  screen):
+    return resize_img, img_rect, {"rect": bg_rect, "img": bg_img}, box, border_box, sound_btn, star_tracker, (
+        rocket_img, rocket_rect)
+
+
+def get_buttons(session, screen):
     width = screen.get_width()
     height = screen.get_height()
 
@@ -87,17 +172,27 @@ def get_buttons(session,  screen):
 
     for i in range(4):
         x_pos = gap + i * (btn_width + gap)
-        buttons.append(QuestionBtn((x_pos, y_pos), (btn_width, btn_height), (255, 255, 255), f"{labels[i]}. {options[i]}", 10))
-
+        buttons.append(
+            QuestionBtn((x_pos, y_pos), (btn_width, btn_height), (255, 255, 255), f"{labels[i]}. {options[i]}", 10))
 
     return buttons
 
-def draw(screen, word_img, img_rect, buttons, box, border_box,bg_question, sound_btn, mouse_pos):
+
+def draw(screen, word_img, img_rect, buttons, box, border_box, bg_question, sound_btn, mouse_pos, rocket_data=None):
     screen.blit(bg_question["img"], bg_question["rect"])
+
     pygame.draw.rect(screen, (145, 185, 235), border_box, border_radius=28)
     pygame.draw.rect(screen, (255, 255, 255), box, border_radius=28)
     screen.blit(word_img, img_rect)
-    sound_btn.draw(screen, mouse_pos)
+
+    if sound_btn:
+        sound_btn.draw(screen, mouse_pos)
+
+    # Draw the rocket surface if available
+    if rocket_data:
+        rocket_img, rocket_rect = rocket_data
+        screen.blit(rocket_img, rocket_rect)
+
     for button in buttons:
         button.draw(screen)
 
