@@ -188,7 +188,6 @@ def draw(screen, word_img, img_rect, buttons, box, border_box, bg_question, soun
     if sound_btn:
         sound_btn.draw(screen, mouse_pos)
 
-    # Draw the rocket surface if available
     if rocket_data:
         rocket_img, rocket_rect = rocket_data
         screen.blit(rocket_img, rocket_rect)
