@@ -10,6 +10,7 @@ CATEGORY_MIXED = "mixed"
 DIFFICULTY_EASY = "easy"
 DIFFICULTY_DIFFICULT = "diff"
 
+
 class Question:
     def __init__(self, word, word_list):
         self.word = word
@@ -21,6 +22,7 @@ class Question:
         self.choice_list.append(self.word)
         random.shuffle(self.choice_list)
         return self.choice_list[0], self.choice_list[1], self.choice_list[2], self.choice_list[3]
+
 
 class GameSession:
     def __init__(self):
@@ -46,13 +48,16 @@ class GameSession:
         self.round_counter += 1
         status = self._advance_word()
 
-        # Special statuses always take priority
+        # Special state conditions
         if status in ("difficulty_up", "game_over"):
             self.round_counter = 0
+            self.game_state["round_score"] = 0  # FIX 4: Clear star display container for next round
             return status
 
+        # FIX 5: Clean round summary activation on every 5 answered words
         if self.round_counter == 5:
             self.round_counter = 0
+            self.game_state["round_score"] = 0  # Reset visual star counter for next round
             return "round_complete"
 
         return "next_word"
@@ -81,7 +86,6 @@ class GameSession:
             else:
                 self.current_word = self.pool[self.pool_index]
 
-# Builds priority pool of 5 words for mastery phase.
     def build_pool(self):
         wrong = list(self.game_state["wrong_words"])
         pending = list(self.game_state["pending_words"])
@@ -118,14 +122,13 @@ class GameSession:
         self.current_word = self.session_words[0]
         self.phase = "intro"
 
-    # Returns the list of wrong words and their hints
     def wrong_words_hint(self):
         words = list(self.game_state["wrong_words"])
         hint = {}
         for word in words:
             hint[word] = self.hint_dict.get(word, f"This is {word}.")
-
         return words, hint
+
 
 def play_intro_phase(session):
     session.session_words, session.hint_dict = get_words_list(session)
@@ -133,6 +136,7 @@ def play_intro_phase(session):
     session.game_state = create_state(session.session_words)
     session.current_index = 0
     session.current_word = session.session_words[0]
+
 
 def get_words_list(session):
     if session.category == CATEGORY_ANIMALS:
@@ -147,13 +151,17 @@ def get_words_list(session):
     hints = {d["name"]: d.get("hint") for d in data}
     return words, hints
 
+
 def update_game_state(is_correct, game_state, current_word, hint_dict):
     mastered = game_state["mastered_words"]
     pending = game_state["pending_words"]
     wrong = game_state["wrong_words"]
     streak = game_state["streak"]
+
+    # FIX 6: Removed the mid-round reset constraint from here to let round_score safely accumulate up to individual question targets
     if is_correct:
         game_state["score"] += 1
+        game_state["round_score"] += 1
         streak[current_word] = streak.get(current_word, 0) + 1
         if streak[current_word] >= 2:
             mastered.add(current_word)
@@ -168,6 +176,7 @@ def update_game_state(is_correct, game_state, current_word, hint_dict):
             pending.discard(current_word)
             wrong.add(current_word)
 
+
 def create_state(words):
     return {
         "wrong_words": set(),
@@ -175,7 +184,9 @@ def create_state(words):
         "mastered_words": set(),
         "streak": {word: 0 for word in words},
         "score": 0,
+        "round_score": 0,
     }
+
 
 def get_hint(word, hint_dict):
     return hint_dict.get(word, f"This is {word}.")
