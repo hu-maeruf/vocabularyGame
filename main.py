@@ -19,7 +19,7 @@ def main():
     gloss = home.create_gloss_surface()
     choice_buttons = None
     triangle_points, arrow_point = home.triangle_points()
-    category_btn, cat_title = cat.init(screen)
+    category_btn, cat_title, cat_back_btn = cat.init(screen)
     pygame.display.set_caption("Vocabulary Adventure")
     running = True
     state = "home"
@@ -29,11 +29,10 @@ def main():
     feedback_start_time = 0
     feedback_type = None
     pending_answer = None
-    round_summary_btn = None
-    round_summary_text = None
-    round_summary_text_rect = None
-    win_title = None
-    win_title_rect = None
+    continue_btn = None
+    graphics = None
+    summary_star_tracker = None
+    game_back_btn = None
     win_score_text = None
     win_score_rect = None
     play_again_btn = None
@@ -54,10 +53,10 @@ def main():
             home.draw(screen, gloss, triangle_points, arrow_point, font_surface)
         elif state == "category":
             cat.draw_space_gradient(screen)
-            cat.draw_btn(category_btn, screen, cat_title)
+            cat.draw_btn(category_btn, screen, cat_title, cat_back_btn)
         elif state == "question":
             if word_img and img_rect and choice_buttons and star_tracker:
-                question.draw(screen, word_img, img_rect, choice_buttons, box, border_box, bg_question, sound_btn,mouse_pos, rocket_data)
+                question.draw(screen, word_img, img_rect, choice_buttons, box, border_box, bg_question, sound_btn,mouse_pos, game_back_btn,rocket_data)
                 star_tracker.draw(screen, session.game_state["round_score"])
 
             if feedback_active:
@@ -71,65 +70,82 @@ def main():
 
                     if status == "game_over":
                         state = "win"
-                        win_title, win_title_rect, win_score_text, win_score_rect, play_again_btn, back_btn = win.init(screen, session.game_state["score"])
+                        graphics, win_score_text, win_score_rect, play_again_btn, back_btn = win.init(screen, session.game_state["score"])
                     elif status in ("round_complete", "difficulty_up"):
                         state = "round_summary"
-                        round_summary_btn, round_summary_text, round_summary_text_rect = round_summary.init(screen)
+                        continue_btn, graphics, summary_star_tracker = round_summary.init(screen, session.game_state["round_score"])
                     else:
                         img_dict = load_image(session)
-                        word_img, img_rect, bg_question, box, border_box, sound_btn, star_tracker, rocket_data = question.init(session.current_word, img_dict, screen)
+                        word_img, img_rect, bg_question, box, border_box, sound_btn, star_tracker, rocket_data, game_back_btn = question.init(session.current_word, img_dict, screen)
                         choice_buttons = question.get_buttons(session, screen)
 
         elif state == "round_summary":
-            round_summary.draw(screen, round_summary_btn, round_summary_text, round_summary_text_rect)
+            round_summary.draw(screen, bg_question, continue_btn, graphics, summary_star_tracker)
         elif state == "win":
-            win.draw(screen, win_title, win_title_rect, win_score_text, win_score_rect, play_again_btn, back_btn)
+            win.draw(screen, graphics, win_score_text, win_score_rect, play_again_btn, back_btn)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if state == "question" and not feedback_active and choice_buttons:
-                    for btn in choice_buttons:
-                        if btn.rect.collidepoint(event.pos):
-                            selected_answer = btn.text.split(". ")[1]
-                            feedback_active = True
-                            feedback_start_time = pygame.time.get_ticks()
+                if state == "question" and not feedback_active:
+                    if game_back_btn.is_clicked(event):
+                        session.game_state["round_score"] = 0
+                        session.round_counter = 0
+                        state = "category"
+                    else:
+                        for btn in choice_buttons:
+                            if btn.rect.collidepoint(event.pos):
+                                selected_answer = btn.text.split(". ")[1]
+                                feedback_active = True
+                                feedback_start_time = pygame.time.get_ticks()
 
-                            if selected_answer == session.current_word:
-                                feedback_type = "correct"
-                                pending_answer = True
-                                btn.mark_correct()
-                            else:
-                                feedback_type = "wrong"
-                                pending_answer = False
-                                btn.mark_wrong()
-                            break
+                                if selected_answer == session.current_word:
+                                    feedback_type = "correct"
+                                    pending_answer = True
+                                    btn.mark_correct()
+                                else:
+                                    feedback_type = "wrong"
+                                    pending_answer = False
+                                    btn.mark_wrong()
+                                break
 
             if state == "home":
                 if home.is_clicked(event, home_btn):
                     state = "category"
             elif state == "category":
-                session.category = cat.handle_events(category_btn, event)
-                if session.category:
-                    state = "question"
-                    play_intro_phase(session)
-                    img_dict = question.get_img(session.category, DIFFICULTY_EASY)
-                    word_img, img_rect, bg_question, box, border_box, sound_btn, star_tracker, rocket_data = question.init(session.current_word, img_dict, screen)
-                    choice_buttons = question.get_buttons(session, screen)
+                if cat_back_btn and cat_back_btn.is_clicked(event):
+                    state = "home"
+                else:
+                    session.category = cat.handle_events(category_btn, event)
+                    if session.category:
+                        state = "question"
+                        play_intro_phase(session)
+                        session.game_state["round_score"] = 0
+                        session.round_counter = 0
+                        img_dict = question.get_img(session.category, DIFFICULTY_EASY)
+                        word_img, img_rect, bg_question, box, border_box, sound_btn, star_tracker, rocket_data, game_back_btn = question.init(session.current_word, img_dict, screen)
+                        choice_buttons = question.get_buttons(session, screen)
             elif state == "round_summary":
-                result = round_summary.handle_events(event, round_summary_btn)
+                result = round_summary.handle_events(event, continue_btn)
                 if result == "question":
+                    session.game_state["round_score"] = 0
                     state = "question"
                     img_dict = load_image(session)
-                    word_img, img_rect, bg_question, box, border_box, sound_btn, star_tracker, rocket_data = question.init(session.current_word, img_dict, screen)
+                    word_img, img_rect, bg_question, box, border_box, sound_btn, star_tracker, rocket_data, game_back_btn = question.init(session.current_word, img_dict, screen)
                     choice_buttons = question.get_buttons(session, screen)
             elif state == "win":
                 result = win.handle_events(event, play_again_btn, back_btn)
-                if result in ("play_again", "category"):
+                if result == "play_again":
                     session = GameSession()
+                    session.category = session.category  # preserves selected category if applicable, or resets fully
                     state = "category"
+                    choice_buttons = None
+                elif result == "category":
+                    # "Quit Game" should take them completely back to the main home screen
+                    session = GameSession()
+                    state = "home"
                     choice_buttons = None
 
         clock.tick(60)
