@@ -1,5 +1,5 @@
 import pygame
-import components.tts_helper as tts
+import sound_manager
 import screens.home as home
 import screens.category as cat
 import screens.question as question
@@ -10,14 +10,7 @@ from game import GameSession, play_intro_phase
 
 pygame.init()
 pygame.mixer.init()
-
-try:
-    pygame.mixer.music.load("assets/audio/music/background.mp3")
-    pygame.mixer.music.set_volume(0.2)
-    pygame.mixer.music.play(-1)
-    print("Background music started!")
-except Exception as e:
-    print(f"Could not load background music: {e}")
+sound_manager.start_background_music()
 
 DIFFICULTY_EASY = "easy"
 DIFFICULTY_DIFFICULT = "diff"
@@ -81,6 +74,7 @@ def main():
                     if status == "game_over":
                         state = "win"
                         graphics, win_score_text, win_score_rect, play_again_btn, back_btn = win.init(screen, session.game_state["score"])
+                        sound_manager.play_victory_sound()
                     elif status in ("round_complete", "difficulty_up"):
                         state = "round_summary"
                         continue_btn, graphics, summary_star_tracker = round_summary.init(screen, session.game_state["round_score"])
@@ -88,7 +82,7 @@ def main():
                         img_dict = load_image(session)
                         word_img, img_rect, bg_question, box, border_box, sound_btn, star_tracker, rocket_data, game_back_btn = question.init(session.current_word, img_dict, screen)
                         choice_buttons = question.get_buttons(session, screen)
-                        play_word_audio()
+                        sound_manager.play_word_audio()
 
         elif state == "round_summary":
             round_summary.draw(screen, bg_question, continue_btn, graphics, summary_star_tracker)
@@ -102,7 +96,7 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if state == "question" and not feedback_active:
                     if sound_btn and sound_btn.rect.collidepoint(event.pos):
-                        play_word_audio()
+                        sound_manager.play_word_audio()
                         continue
                     if game_back_btn.is_clicked(event):
                         session.game_state["round_score"] = 0
@@ -119,6 +113,7 @@ def main():
                                     feedback_type = "correct"
                                     pending_answer = True
                                     btn.mark_correct()
+                                    sound_manager.play_success_sound()
                                 else:
                                     feedback_type = "wrong"
                                     pending_answer = False
@@ -141,7 +136,7 @@ def main():
                         img_dict = question.get_img(session.category, DIFFICULTY_EASY)
                         word_img, img_rect, bg_question, box, border_box, sound_btn, star_tracker, rocket_data, game_back_btn = question.init(session.current_word, img_dict, screen)
                         choice_buttons = question.get_buttons(session, screen)
-                        play_word_audio()
+                        sound_manager.play_word_audio()
             elif state == "round_summary":
                 result = round_summary.handle_events(event, continue_btn)
                 if result == "question":
@@ -150,23 +145,23 @@ def main():
                     img_dict = load_image(session)
                     word_img, img_rect, bg_question, box, border_box, sound_btn, star_tracker, rocket_data, game_back_btn = question.init(session.current_word, img_dict, screen)
                     choice_buttons = question.get_buttons(session, screen)
-                    play_word_audio()
+                    sound_manager.play_word_audio()
             elif state == "win":
                 result = win.handle_events(event, play_again_btn, back_btn)
                 if result == "play_again":
                     session = GameSession()
-                    session.category = session.category  # preserves selected category if applicable, or resets fully
+                    session.category = session.category
                     state = "category"
                     choice_buttons = None
+                    sound_manager.start_background_music()
                 elif result == "category":
-                    # "Quit Game" should take them completely back to the main home screen
                     session = GameSession()
                     state = "home"
                     choice_buttons = None
+                    sound_manager.start_background_music()
 
         clock.tick(60)
         pygame.display.update()
-
 
 def load_image(session):
     easy_imgs = question.get_img(session.category, DIFFICULTY_EASY)
@@ -174,17 +169,6 @@ def load_image(session):
     img_dict = {**easy_imgs, **diff_imgs}
     return img_dict
 
-def play_word_audio():
-    full_sentence = "What is this?"
-    tts_sound = tts.speak_word(full_sentence, "question_prompt")
-    if tts_sound:
-        try:
-            voice_channel = pygame.mixer.Channel(7)
-            voice_channel.stop()
-            voice_channel.play(tts_sound)
-            tts_sound.set_volume(0.5)
-        except Exception as e:
-            print(f"Audio playback error: {e}")
 
 if __name__ == "__main__":
     main()
