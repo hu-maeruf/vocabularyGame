@@ -20,7 +20,7 @@ class BtnCategory(Button):
         screen.blit(self.img, self.img_rect)
         screen.blit(self.text_surface, self.text_rect)
 
-def init(screen,):
+def init(screen):
     img = pygame.image.load("assets/images/category/title.png").convert_alpha()
     width = int(screen.get_width()) * 0.6
     height = int(screen.get_height()) * 0.3
@@ -31,9 +31,10 @@ def init(screen,):
         BtnCategory((350, 400), (250, 230), (140, 195, 240), "Colors", "color.png"),
         BtnCategory((650, 400), (250, 230), (245, 195, 90), "Mixed", "mixed.png")
     ]
-    return buttons, img
+    back_btn = Button((30, 30), (180, 70), (200, 50, 50), border_radius=15)
+    return buttons, img, back_btn
 
-def draw_btn(buttons, screen, img):
+def draw_btn(buttons, screen, img, back_btn):
     width = screen.get_width()
     width_half = width // 2
     rect = img.get_rect()
@@ -41,6 +42,12 @@ def draw_btn(buttons, screen, img):
     for button in buttons:
         button.draw(screen)
     screen.blit(img, rect)
+    if back_btn:
+        back_btn.draw(screen)
+        font = pygame.font.SysFont("Arial", 34, bold=True)
+        text = font.render("Back", True, (255, 255, 255))
+        screen.blit(text, text.get_rect(center=back_btn.rect.center))
+
 def handle_events(buttons, event):
     for button in buttons:
         if button.is_clicked(event):
