@@ -4,7 +4,6 @@ from game import Question
 from components.button import Button
 from words import init_animals, init_fruits_veg, init_colors
 
-
 class QuestionBtn(Button):
     def __init__(self, position, size, color, text, border_radius):
         super().__init__(position, size, color, border_radius)
@@ -60,7 +59,6 @@ class QuestionBtn(Button):
         text_rect = self.text_surface.get_rect(center=draw_rect.center)
         screen.blit(self.text_surface, text_rect)
 
-
 class SoundButton:
     def __init__(self, image_path, position=(30, 30), size=(70, 70)):
         self.image = pygame.image.load(image_path).convert_alpha()
@@ -82,7 +80,6 @@ class SoundButton:
             screen.blit(self.image, self.rect)
 
         screen.blit(self.text_surface, self.text_rect)
-
 
 class StarTracker:
     def __init__(self, filled_star_path, empty_star_path, screen_width, y_pos=20):
@@ -117,7 +114,6 @@ class StarTracker:
                 screen.blit(self.star_filled, (star_x, star_y))
             else:
                 screen.blit(self.star_empty, (star_x, star_y))
-
 
 def init(word, img_dict, screen):
     word_img = img_dict[word]
@@ -156,7 +152,6 @@ def init(word, img_dict, screen):
     return resize_img, img_rect, {"rect": bg_rect, "img": bg_img}, box, border_box, sound_btn, star_tracker, (
         rocket_img, rocket_rect), game_back_btn
 
-
 def get_buttons(session, screen):
     width = screen.get_width()
     height = screen.get_height()
@@ -178,7 +173,6 @@ def get_buttons(session, screen):
             QuestionBtn((x_pos, y_pos), (btn_width, btn_height), (255, 255, 255), f"{labels[i]}. {options[i]}", 10))
 
     return buttons
-
 
 def draw(screen, word_img, img_rect, buttons, box, border_box, bg_question, sound_btn, mouse_pos, game_back_btn,rocket_data=None):
     screen.blit(bg_question["img"], bg_question["rect"])
