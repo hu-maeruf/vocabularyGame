@@ -105,7 +105,7 @@ class StarTracker:
 
         self.pill_rect = pygame.Rect(self.x, self.y, self.pill_width, self.pill_height)
 
-    def draw(self, screen, current_score):
+    def draw(self, screen,current_score):
         pygame.draw.rect(screen, (20, 35, 90), self.pill_rect, border_radius=30)
         pygame.draw.rect(screen, (100, 130, 200), self.pill_rect, width=3, border_radius=30)
 
@@ -147,12 +147,14 @@ def init(word, img_dict, screen):
     star_tracker = StarTracker("assets/images/question/star.png", "assets/images/question/image.png",screen.get_width())
     rocket_img = pygame.image.load("assets/images/question/launch.png").convert_alpha()
     rocket_img = pygame.transform.scale(rocket_img, (110, 110))
-    rocket_x = border_box.right + 120
-    rocket_y = border_box.centery - 200
+    rocket_x = border_box.right + 70
+    rocket_y = border_box.centery - 160
     rocket_rect = rocket_img.get_rect(topleft=(rocket_x,rocket_y))
 
+    game_back_btn = Button((1080, 20), (170, 60), (200, 50, 50), border_radius=15)
+
     return resize_img, img_rect, {"rect": bg_rect, "img": bg_img}, box, border_box, sound_btn, star_tracker, (
-        rocket_img, rocket_rect)
+        rocket_img, rocket_rect), game_back_btn
 
 
 def get_buttons(session, screen):
@@ -178,7 +180,7 @@ def get_buttons(session, screen):
     return buttons
 
 
-def draw(screen, word_img, img_rect, buttons, box, border_box, bg_question, sound_btn, mouse_pos, rocket_data=None):
+def draw(screen, word_img, img_rect, buttons, box, border_box, bg_question, sound_btn, mouse_pos, game_back_btn,rocket_data=None):
     screen.blit(bg_question["img"], bg_question["rect"])
 
     pygame.draw.rect(screen, (145, 185, 235), border_box, border_radius=28)
@@ -191,6 +193,12 @@ def draw(screen, word_img, img_rect, buttons, box, border_box, bg_question, soun
     if rocket_data:
         rocket_img, rocket_rect = rocket_data
         screen.blit(rocket_img, rocket_rect)
+
+    if game_back_btn:
+        game_back_btn.draw(screen)
+        font = pygame.font.SysFont("Arial", 30, bold=True)
+        text = font.render("Quit", True, (255, 255, 255))
+        screen.blit(text, text.get_rect(center=game_back_btn.rect.center))
 
     for button in buttons:
         button.draw(screen)
