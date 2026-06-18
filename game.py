@@ -1,5 +1,4 @@
 import random
-
 from words import init_animals, init_fruits_veg, init_colors
 
 CATEGORY_ANIMALS = "animals"
@@ -9,7 +8,6 @@ CATEGORY_MIXED = "mixed"
 
 DIFFICULTY_EASY = "easy"
 DIFFICULTY_DIFFICULT = "diff"
-
 
 class Question:
     def __init__(self, word, word_list):
@@ -22,7 +20,6 @@ class Question:
         self.choice_list.append(self.word)
         random.shuffle(self.choice_list)
         return self.choice_list[0], self.choice_list[1], self.choice_list[2], self.choice_list[3]
-
 
 class GameSession:
     def __init__(self):
@@ -54,7 +51,6 @@ class GameSession:
 
         if self.round_counter == 5:
             self.round_counter = 0
-            self.game_state["round_score"] = 0
             return "round_complete"
 
         return "next_word"
