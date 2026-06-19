@@ -1,5 +1,13 @@
 import pygame
 from components.button import Button
+from game import play_intro_phase
+
+_ui_state: dict[str, pygame.Surface | bool | None] = {
+    "initialized": False,
+    "category_btn": None,
+    "cat_title": None,
+    "cat_back_btn": None,
+}
 
 class BtnCategory(Button):
     def __init__(self, position, size, top_color, text, img, color=(255, 255, 255), border_radius=20, font_color=(50, 65, 95)):
@@ -63,3 +71,33 @@ def draw_space_gradient(surface, top_color = (20, 35, 70), bottom_color = (70, 1
         b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
         color = (r, g, b)
         pygame.draw.line(surface, color, (0, y), (width, y))
+
+def run(screen, events, session):
+    global _ui_state
+
+    if not _ui_state["initialized"]:
+        _ui_state["category_btn"], _ui_state["cat_title"], _ui_state["cat_back_btn"] = init(screen)
+        _ui_state["initialized"] = True
+
+    for event in events:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if _ui_state["cat_back_btn"] and _ui_state["cat_back_btn"].is_clicked(event):
+                return "home"
+
+            chosen_category = handle_events(_ui_state["category_btn"], event)
+            if chosen_category:
+                session.category = chosen_category
+                if session.game_state is None:
+                    session.game_state = {}
+
+                session.game_state["round_score"] = 0
+                session.game_state["feedback_active"] = False
+                session.round_counter = 0
+
+                play_intro_phase(session)
+                return "question"
+
+    draw_space_gradient(screen)
+    draw_btn(_ui_state["category_btn"], screen, _ui_state["cat_title"], _ui_state["cat_back_btn"])
+
+    return "category"
