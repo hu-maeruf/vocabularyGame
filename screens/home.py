@@ -5,6 +5,7 @@ radius = 100
 center_x = 1270 // 2
 center_y = 670 // 2
 arrow_size = radius * 0.45
+
 _ui_state: dict[str, pygame.Surface | bool | None] = {
     "initialized": False,
     "home_btn": None,
@@ -14,7 +15,7 @@ _ui_state: dict[str, pygame.Surface | bool | None] = {
     "arrow_pt": None
 }
 
-def run(screen, event):
+def run(screen, events):
     global _ui_state
     if not _ui_state["initialized"]:
         _ui_state["home_btn"], _ui_state["font_surface"] = init()
@@ -22,7 +23,7 @@ def run(screen, event):
         _ui_state["tri_pts"], _ui_state["arrow_pt"] = triangle_points()
         _ui_state["initialized"] = True
 
-    for event in pygame.event.get():
+    for event in events:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if _ui_state["home_btn"].collidepoint(event.pos):
                 return "category"
