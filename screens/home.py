@@ -1,11 +1,35 @@
 import pygame
-import components.button as button
 
 _assets = {}
 radius = 100
 center_x = 1270 // 2
 center_y = 670 // 2
 arrow_size = radius * 0.45
+_ui_state: dict[str, pygame.Surface | bool | None] = {
+    "initialized": False,
+    "home_btn": None,
+    "font_surface": None,
+    "gloss": None,
+    "tri_pts": None,
+    "arrow_pt": None
+}
+
+def run(screen, event):
+    global _ui_state
+    if not _ui_state["initialized"]:
+        _ui_state["home_btn"], _ui_state["font_surface"] = init()
+        _ui_state["gloss"] = create_gloss_surface()
+        _ui_state["tri_pts"], _ui_state["arrow_pt"] = triangle_points()
+        _ui_state["initialized"] = True
+
+    for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if _ui_state["home_btn"].collidepoint(event.pos):
+                return "category"
+
+    draw(screen, _ui_state["gloss"], _ui_state["tri_pts"], _ui_state["arrow_pt"], _ui_state["font_surface"])
+
+    return "home"
 
 def init():
     btn = pygame.rect.Rect(center_x - radius, center_y - radius, radius * 2, radius * 2)
