@@ -12,7 +12,6 @@ pygame.init()
 pygame.mixer.init()
 sound_manager.start_background_music()
 
-
 def main():
     screen = pygame.display.set_mode((1270, 670))
     session = GameSession()
@@ -39,14 +38,13 @@ def main():
             state = question.run(screen, events, session, feedback, win, round_summary)
 
         elif state == "round_summary":
-            pass
+            state = round_summary.run(screen, events, session)
 
         elif state == "win":
-            pass
+            state = win.run(screen, events, session)
 
         clock.tick(60)
         pygame.display.update()
-
 
 if __name__ == "__main__":
     main()
