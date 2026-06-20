@@ -76,21 +76,32 @@ class GameSession:
                         self.game_over = True
                         return "game_over"
                 self.build_pool()
+                return "next_word"
             else:
                 self.current_word = self.pool[self.pool_index]
+                return "next_word"
 
     def build_pool(self):
         wrong = list(self.game_state["wrong_words"])
         pending = list(self.game_state["pending_words"])
         mastered = list(self.game_state["mastered_words"])
-        remaining = [w for w in self.session_words if w not in self.game_state["mastered_words"]]
+
+        remaining = [w for w in self.session_words if w not in self.game_state["mastered_words"] and w not in self.game_state["wrong_words"] and w not in self.game_state["pending_words"]]
+
         random.shuffle(wrong)
         random.shuffle(pending)
-        random.shuffle(mastered)
         random.shuffle(remaining)
-        self.pool = (wrong + pending + mastered + remaining)[:5]
+
+        active_pool = wrong + pending + remaining
+
+        if len(active_pool) < 5:
+            random.shuffle(mastered)
+            active_pool += mastered
+
+        self.pool = active_pool[:5]
         self.pool_index = 0
-        self.current_word = self.pool[0]
+        if self.pool:
+            self.current_word = self.pool[0]
 
     def check_threshold(self):
         no_mastered = len(self.game_state["mastered_words"])
@@ -128,6 +139,7 @@ def play_intro_phase(session):
     session.game_state = create_state(session.session_words)
     session.current_index = 0
     session.current_word = session.session_words[0]
+    session.phase = "intro"
 
 def get_words_list(session):
     if session.category == CATEGORY_ANIMALS:

@@ -106,7 +106,7 @@ class StarTracker:
 
         self.pill_rect = pygame.Rect(self.x, self.y, self.pill_width, self.pill_height)
 
-    def draw(self, screen,current_score):
+    def draw(self, screen, current_score):
         pygame.draw.rect(screen, (20, 35, 90), self.pill_rect, border_radius=30)
         pygame.draw.rect(screen, (100, 130, 200), self.pill_rect, width=3, border_radius=30)
 
@@ -137,12 +137,10 @@ _ui_state = {
     "pending_answer": None
 }
 
-
 def load_all_images(session):
     easy_imgs = get_img(session.category, DIFFICULTY_EASY)
     diff_imgs = get_img(session.category, DIFFICULTY_DIFFICULT)
     return {**easy_imgs, **diff_imgs}
-
 
 def init_ui(session, screen):
     global _ui_state
@@ -172,12 +170,12 @@ def init_ui(session, screen):
     border_thickness = 5
     border_box = box.inflate(border_thickness * 2, border_thickness * 2)
 
-    star_tracker = StarTracker("assets/images/question/star.png", "assets/images/question/image.png",screen.get_width())
+    star_tracker = StarTracker("assets/images/question/star.png", "assets/images/question/image.png", screen.get_width())
     rocket_img = pygame.image.load("assets/images/question/launch.png").convert_alpha()
     rocket_img = pygame.transform.scale(rocket_img, (110, 110))
     rocket_x = border_box.right + 70
     rocket_y = border_box.centery - 160
-    rocket_rect = rocket_img.get_rect(topleft=(rocket_x,rocket_y))
+    rocket_rect = rocket_img.get_rect(topleft=(rocket_x, rocket_y))
 
     game_back_btn = Button((1080, 20), (170, 60), (200, 50, 50), border_radius=15)
 
@@ -212,7 +210,6 @@ def init_ui(session, screen):
         "pending_answer": None
     })
 
-
 def run(screen, events, session, feedback_module, win_module, round_summary_module):
     global _ui_state
 
@@ -245,12 +242,10 @@ def run(screen, events, session, feedback_module, win_module, round_summary_modu
                             _ui_state["feedback_type"] = "correct"
                             btn.mark_correct()
                             sound_manager.play_success_sound()
-
                             _ui_state["target_score"] = session.game_state["round_score"] + 1
                         else:
                             _ui_state["feedback_type"] = "wrong"
                             btn.mark_wrong()
-
                             _ui_state["target_score"] = session.game_state["round_score"]
                         break
 
@@ -270,7 +265,8 @@ def run(screen, events, session, feedback_module, win_module, round_summary_modu
         if anim_timer >= 1000:
             _ui_state["feedback_active"] = False
 
-            status = session.advance(_ui_state["pending_answer"])
+            is_correct_bool = (_ui_state["pending_answer"] == session.current_word)
+            status = session.advance(is_correct_bool)
 
             session.game_state["round_score"] = _ui_state["target_score"]
 
