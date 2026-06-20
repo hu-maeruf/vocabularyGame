@@ -1,8 +1,9 @@
+from typing import Any
 import pygame
 from components.button import Button
 from screens.question import StarTracker
 
-_ui_state = {
+_ui_state: dict[str, Any] = {
     "initialized": False,
     "continue_btn": None,
     "graphics": None,
