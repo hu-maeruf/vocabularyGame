@@ -1,6 +1,7 @@
 import pygame
 import math
 import sound_manager
+from vui_manager import vui
 from game import Question
 from components.button import Button
 from words import init_animals, init_fruits_veg, init_colors
@@ -134,7 +135,8 @@ _ui_state = {
     "feedback_active": False,
     "feedback_start_time": 0,
     "feedback_type": None,
-    "pending_answer": None
+    "pending_answer": None,
+    "vui_prompted": False
 }
 
 def load_all_images(session):
@@ -210,20 +212,54 @@ def init_ui(session, screen):
         "pending_answer": None
     })
 
+def process_answer(session,  submitted_answer):
+    global _ui_state
+
+    _ui_state["feedback_active"] = True
+    _ui_state["feedback_start_time"] = pygame.time.get_ticks()
+
+    submitted_clean = submitted_answer.strip().lower()
+    is_correct = session.current_word.lower() in submitted_clean
+
+    _ui_state["pending_answer"] = session.current_word if is_correct else submitted_clean
+
+    if is_correct:
+        _ui_state["feedback_type"] = "correct"
+        sound_manager.play_success_sound()
+        _ui_state["target_score"] = session.game_state["round_score"] + 1
+    else:
+        _ui_state["feedback_type"] = "wrong"
+        _ui_state["target_score"] = session.game_state["round_score"]
+
+    for btn in _ui_state["choice_buttons"]:
+        btn_word = btn.text.split(". ")[1].lower()
+        if is_correct and btn_word == session.current_word.lower():
+            btn.mark_correct()
+        elif not is_correct and (btn_word == submitted_clean or btn_word in submitted_clean):
+            btn.mark_wrong()
+
 def run(screen, events, session, feedback_module, win_module, round_summary_module):
     global _ui_state
 
     if _ui_state["current_word_loaded"] != session.current_word:
         init_ui(session, screen)
-        sound_manager.play_word_audio()
+        vui.speak_and_listen("Can you tell me what this is?")
+        _ui_state["vui_prompted"] = True
 
     mouse_pos = pygame.mouse.get_pos()
 
     if not _ui_state["feedback_active"]:
+        spoken_text = vui.get_recognized_text()
+        if spoken_text:
+            if spoken_text != "UNKNOWN_AUDIO":
+                process_answer(session, spoken_text)
+            else:
+                vui.speak_and_listen("I didn't quite catch that. Try clicking a button!")
+
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if _ui_state["sound_btn"] and _ui_state["sound_btn"].rect.collidepoint(event.pos):
-                    sound_manager.play_word_audio()
+                    vui.speak_and_listen("Can you tell me what this is?")
 
                 if _ui_state["game_back_btn"] and _ui_state["game_back_btn"].is_clicked(event):
                     session.game_state["round_score"] = 0
@@ -274,10 +310,12 @@ def run(screen, events, session, feedback_module, win_module, round_summary_modu
                 sound_manager.play_victory_sound()
                 return "win"
             elif status in ("round_complete", "difficulty_up"):
+                _ui_state["current_word_loaded"] = None
                 return "round_summary"
             else:
-                init_ui(session, screen)
+                _ui_state["current_word_loaded"] = None
                 sound_manager.play_word_audio()
+                return "question"
 
     return "question"
 
