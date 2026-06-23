@@ -2,11 +2,13 @@ import pygame
 import sound_manager
 import screens.home as home
 import screens.category as cat
+import screens.friend_selection as friend_selection
 import screens.question as question
 import screens.feedback as feedback
 import screens.round_summary as round_summary
 import screens.win as win
 from game import GameSession
+from components.transition_manager import TransitionManager
 
 pygame.init()
 pygame.mixer.init()
@@ -17,6 +19,7 @@ def main():
     session = GameSession()
     pygame.display.set_caption("Vocabulary Adventure")
 
+    transition = TransitionManager(duration_ms=300)
     running = True
     state = "home"
     clock = pygame.time.Clock()
@@ -28,20 +31,31 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
+        next_state = state
+        active_events = [] if transition.phase != TransitionManager.IDLE else events
+
         if state == "home":
-            state = home.run(screen, events)
+            next_state = home.run(screen, active_events)
 
         elif state == "category":
-            state = cat.run(screen, events, session)
+            next_state = cat.run(screen, active_events, session)
+
+        elif state == "friend_selection":
+            next_state = friend_selection.run(screen, active_events, session)
 
         elif state == "question":
-            state = question.run(screen, events, session, feedback, win, round_summary)
+            next_state = question.run(screen, active_events, session, feedback)
 
         elif state == "round_summary":
-            state = round_summary.run(screen, events, session)
+            next_state = round_summary.run(screen, active_events, session)
 
         elif state == "win":
-            state = win.run(screen, events, session)
+            next_state = win.run(screen, events, session)
+
+        if next_state != state and transition.phase == TransitionManager.IDLE:
+            transition.request(next_state)
+
+        state = transition.update(screen, state)
 
         clock.tick(60)
         pygame.display.update()
